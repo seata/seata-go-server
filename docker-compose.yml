@@ -1,0 +1,143 @@
+version: '2.1'
+services:
+  pushgateway:
+    image: prom/pushgateway
+    expose:
+      - 9091
+    ports:
+      - "9091:9091"
+  
+  prometheus:
+    image: prom/prometheus:v2.9.2
+    depends_on: 
+      - pushgateway
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    expose:
+      - 9090
+    ports:
+      - "9090:9090"
+  
+  grafana:
+    image: grafana/grafana:4.6.3
+    depends_on: 
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    expose:
+      - 3000
+    ports:
+      - "3000:3000"
+
+  cell:
+    image: deepfabric/quickstart
+    ports:
+      - "6379:6379"
+  seata1:
+    image: infinivision/seata
+    depends_on: 
+      - cell
+      - pushgateway
+    ports:
+      - "8080:8080"
+    command:
+      - --wait=10
+      - --id=1
+      - --init=32
+      - --log-level=error
+      - --addr=seata1:8080
+      - --addr-cell=cell:6379
+      - --addr-peer=seata1:9090
+      - --prophet-addr=seata1:9529
+      - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
+      - --prophet-urls-client=http://0.0.0.0:2371
+      - --prophet-urls-advertise-client=http://seata1:2371
+      - --prophet-urls-peer=http://0.0.0.0:2381
+      - --prophet-urls-advertise-peer=http://seata1:2381
+      - --prophet-initial-cluster=p1=http://seata1:2381,p2=http://seata2:2381,p3=http://seata3:2381
+      - --prophet-storage=true
+      - --rack=rack-1
+      - --metrics-push-addr=pushgateway:9091
+      - --metrics-push-interval=5
+  seata2:
+    image: infinivision/seata
+    depends_on: 
+      - cell
+      - pushgateway
+    ports:
+      - "8081:8080"
+    command:
+      - --wait=10
+      - --id=2
+      - --init=32
+      - --log-level=error
+      - --addr=seata2:8080
+      - --addr-cell=cell:6379
+      - --addr-peer=seata2:9090
+      - --prophet-addr=seata2:9529
+      - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
+      - --prophet-urls-client=http://0.0.0.0:2371
+      - --prophet-urls-advertise-client=http://seata2:2371
+      - --prophet-urls-peer=http://0.0.0.0:2381
+      - --prophet-urls-advertise-peer=http://seata2:2381
+      - --prophet-initial-cluster=p1=http://seata1:2381,p2=http://seata2:2381,p3=http://seata3:2381
+      - --prophet-storage=true
+      - --rack=rack-2
+      - --metrics-push-addr=pushgateway:9091
+      - --metrics-push-interval=5
+  seata3:
+    image: infinivision/seata
+    depends_on: 
+      - cell
+      - pushgateway
+    ports:
+      - "8082:8080"
+    command:
+      - --wait=10
+      - --id=3
+      - --init=32
+      - --log-level=error
+      - --addr=seata3:8080
+      - --addr-cell=cell:6379
+      - --addr-peer=seata3:9090
+      - --prophet-addr=seata3:9529
+      - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
+      - --prophet-urls-client=http://0.0.0.0:2371
+      - --prophet-urls-advertise-client=http://seata3:2371
+      - --prophet-urls-peer=http://0.0.0.0:2381
+      - --prophet-urls-advertise-peer=http://seata3:2381
+      - --prophet-initial-cluster=p1=http://seata1:2381,p2=http://seata2:2381,p3=http://seata3:2381
+      - --prophet-storage=true
+      - --rack=rack-3
+      - --metrics-push-addr=pushgateway:9091
+      - --metrics-push-interval=5
+  seata-proxy:
+    image: infinivision/seata-proxy
+    depends_on: 
+      - cell
+      - seata1
+      - seata2
+      - seata3
+    ports:
+      - "8091:8080"
+    command:
+      - --log-level=error
+      - --addr=:8080
+      - --addr-prophet=seata1:9529,seata2:9529,seata3:9529
+  seata-dashboard:
+    image: infinivision/seata-dashboard
+    depends_on: 
+      - cell
+      - seata1
+      - seata2
+      - seata3
+    ports:
+      - "8084:8080"
+    command:
+      - --addr=:8080
+      - --addr-cell=cell:6379
+      - --addr-prophet=seata1:9529,seata2:9529,seata3:9529
