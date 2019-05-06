@@ -71,16 +71,28 @@ func (c *seataCodec) Decode(in *goetty.ByteBuf) (bool, interface{}, error) {
 
 	switch msgType {
 	case TypeSeataMerge:
-		if !enoughN(in, ReadInt(in), index) {
+		if !enoughN(in, 4, index) {
 			return false, nil, nil
 		}
+
+		size := ReadInt(in)
+		if !enoughN(in, size, index) {
+			return false, nil, nil
+		}
+
 		msg.Body = AcquireMergedWarpMessage()
 		msg.Body.Decode(in)
 		break
 	case TypeSeataMergeResult:
-		if !enoughN(in, ReadInt(in), index) {
+		if !enoughN(in, 4, index) {
 			return false, nil, nil
 		}
+
+		size := ReadInt(in)
+		if !enoughN(in, size, index) {
+			return false, nil, nil
+		}
+
 		msg.Body = AcquireMergeResultMessage()
 		msg.Body.Decode(in)
 		break
