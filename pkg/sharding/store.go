@@ -68,6 +68,11 @@ func (s *Store) Start() {
 
 	s.startFragments()
 	log.Infof("fragments started")
+
+	_, err := s.runner.RunCancelableTask(s.runGCRMTask)
+	if err != nil {
+		log.Fatalf("run gc task failed with %+v", err)
+	}
 }
 
 func (s *Store) startFragments() error {
@@ -219,10 +224,13 @@ func (s *Store) handleRegisterRM(ss *session, msg *meta.RouteableMessage) {
 	rms := req.ToResourceSet(ss.id, msg.RMSID)
 	s.Lock()
 
+	now := time.Now()
 	for _, rm := range rms.ResourceManagers {
+		rm.LastHB = now
 		values := s.resources[rm.Resource]
 		values = append(values, rm)
 		s.resources[rm.Resource] = values
+		log.Infof("%s added", rm.Tag())
 	}
 
 	s.Unlock()
@@ -301,7 +309,7 @@ func (s *Store) rmAddrDetecter(fid uint64, resource string) (meta.ResourceManage
 	rms, ok := s.resources[resource]
 	if !ok {
 		s.RUnlock()
-		return meta.ResourceManager{}, errors.New("no available RM")
+		return meta.ResourceManager{}, errors.New("no available RM, not registered")
 	}
 
 	all := len(rms)
@@ -312,7 +320,7 @@ func (s *Store) rmAddrDetecter(fid uint64, resource string) (meta.ResourceManage
 
 	if all == 0 {
 		s.RUnlock()
-		return meta.ResourceManager{}, errors.New("no available RM")
+		return meta.ResourceManager{}, errors.New("no available RM, rms == 0")
 	}
 
 	now := time.Now()

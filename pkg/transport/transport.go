@@ -121,7 +121,7 @@ func (t *transport) readyToSend(c chan message, index int) {
 				meta.TagBranchTransaction(msg.notify.XID.GID, msg.notify.BID, "notify"))
 			rm, err := t.resourceAddrDetecter(msg.notify.XID.FragmentID, msg.resource)
 			if err != nil {
-				log.Warnf("%s: get RM[%s] falied with %+v",
+				log.Warnf("%s: get RM[%s] failed with %+v",
 					meta.TagBranchTransaction(msg.notify.XID.GID, msg.notify.BID, "notify"),
 					msg.resource,
 					err)

@@ -26,7 +26,7 @@ func main() {
 	flag.Parse()
 	log.InitLog()
 
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 1; i++ {
 		go func(idx int) {
 			res := fmt.Sprintf("res-%d", idx)
 			name := fmt.Sprintf("test-%d", idx)
@@ -49,7 +49,7 @@ func main() {
 				var bids []uint64
 
 				b := c.CreateBatch()
-				for j := 0; j < 20; j++ {
+				for j := 0; j < 1; j++ {
 					b.CreateGlobal(name, time.Second*30)
 				}
 
@@ -101,6 +101,7 @@ func main() {
 				}
 
 				log.Infof("commit global complete")
+				return
 			}
 		}(i)
 	}
