@@ -32,6 +32,18 @@ Taas本身不存储全局事务的元数据，元数据存储在[Elasticell](htt
 ### Auto-Rebalance
 随着系统的运行，在系统中会存在许多`Fragment`以及它们的副本，这样会导致在每个机器上，`Fragment`的分布不均匀，特别是当旧的机器下线或者新的机器上线的时候。Taas在启动的时候，会选择3个节点作为调度器的角色，调度器负责调度这些`Fragment`，用来保证每个机器上的Fragment的数量以及Leader个数大致相等，同时还会保证每个Fragment的副本数维持在指定的副本个数。
 
+## 快速体验
+```bash
+git clone https//github.com/seata/taas.git
+docker-compse up -d
+```
+
+### Seata服务地址
+服务默认监听在8091端口，修改Seata对应的服务端地址体验
+
+### Seata UI 
+访问WEB UI `http://127.0.0.1:8084/ui/index.html`
+
 ## 关于深见
 深见网络是一家技术驱动的企业级服务提供商，致力于利用人工智能、云计算、区块链、大数据，以及物联网边缘计算技术助力传统企业的数字化转型和升级。深见网络积极拥抱开源文化并将核心算法和架构开源，知名人脸识别软件[InsightFace](https://github.com/deepinsight/insightface)(曾多次获得大规模人脸识别挑战冠军)，以及分布式存储引擎[Elasticell](https://github.com/deepfabric/elasticell)等均是深见网络的开源产品。
 

@@ -52,7 +52,7 @@ docker: dist_dir ui;
 
 .PHONY: ui
 ui: dist_dir; $(info ======== compile ui:)
-	git clone https://gitlab.com/infinivision/taas-ui.git $(DIST_DIR)ui
+	git clone https://github.com/infinivision/taas-ui.git $(DIST_DIR)ui
 
 .PHONY: proxy
 proxy: dist_dir; $(info ======== compiled proxy:)
