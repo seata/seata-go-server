@@ -13,7 +13,7 @@ type Cfg struct {
 	Addr                string
 	ShardingAddr        string
 	DataPath            string
-	Lables              []prophet.Pair
+	Labels              []prophet.Pair
 	ProphetName         string
 	ProphetAddr         string
 	ProphetOptions      []prophet.Option

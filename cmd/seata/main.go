@@ -146,7 +146,7 @@ func main() {
 		FragHBInterval:      time.Second * time.Duration(*fragHBIntervalSec),
 		StoreHBInterval:     time.Second * time.Duration(*storeHBIntervalSec),
 		MaxPeerDownDuration: time.Second * time.Duration(*maxPeerDownSec),
-		Lables: []prophet.Pair{
+		Labels: []prophet.Pair{
 			prophet.Pair{
 				Key:   "zone",
 				Value: *zone,

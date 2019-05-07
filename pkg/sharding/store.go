@@ -42,7 +42,7 @@ func NewStore(cfg Cfg) *Store {
 	s.meta = meta.StoreMeta{
 		Addr:       cfg.ShardingAddr,
 		ClientAddr: cfg.Addr,
-		Lables:     cfg.Lables,
+		Labels:     cfg.Labels,
 	}
 
 	s.resources = make(map[string][]meta.ResourceManager)
