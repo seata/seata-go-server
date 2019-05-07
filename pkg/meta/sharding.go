@@ -37,5 +37,5 @@ type StoreMeta struct {
 	ID         uint64         `json:"id"`
 	Addr       string         `json:"addr"`
 	ClientAddr string         `json:"cliAddr"`
-	Lables     []prophet.Pair `json:"lables"`
+	Labels     []prophet.Pair `json:"lables"`
 }

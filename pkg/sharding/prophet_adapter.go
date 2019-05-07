@@ -126,7 +126,7 @@ func (c *ContainerAdapter) ID() uint64 {
 
 // Lables adapter prophet
 func (c *ContainerAdapter) Lables() []prophet.Pair {
-	return c.meta.Lables
+	return c.meta.Labels
 }
 
 // State adapter prophet
