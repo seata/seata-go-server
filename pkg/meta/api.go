@@ -20,7 +20,7 @@ type Query struct {
 	Action int    `json:"action,omitempty"`
 }
 
-// Filter filter by conditations
+// Filter filter by conditions
 func (q *Query) Filter(value *GlobalTransaction) bool {
 	return q.filterByName(value) &&
 		q.filterByStatus(value) &&

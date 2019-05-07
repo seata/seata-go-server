@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/fagongzi/util/format"
-	"github.com/labstack/echo"
 	"github.com/infinivision/taas/pkg/meta"
+	"github.com/labstack/echo"
 )
 
 const (
