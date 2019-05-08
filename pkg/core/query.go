@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/meta"
 )
 
 // QueryAPI query api

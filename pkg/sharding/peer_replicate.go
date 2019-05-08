@@ -8,8 +8,8 @@ import (
 
 	"github.com/fagongzi/log"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/core"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/core"
+	"github.com/seata/taas/pkg/meta"
 )
 
 // PeerReplicate is the peer replicate. Every Fragment replicate has a PeerReplicate.

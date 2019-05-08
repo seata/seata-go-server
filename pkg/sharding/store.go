@@ -11,8 +11,8 @@ import (
 	"github.com/fagongzi/util/json"
 	"github.com/fagongzi/util/task"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/meta"
-	"github.com/infinivision/taas/pkg/transport"
+	"github.com/seata/taas/pkg/meta"
+	"github.com/seata/taas/pkg/transport"
 )
 
 // Store is a container of fragment, which maintains a set of fragments,

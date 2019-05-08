@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/fagongzi/log"
-	"github.com/infinivision/taas/pkg/meta"
-	"github.com/infinivision/taas/pkg/util"
+	"github.com/seata/taas/pkg/meta"
+	"github.com/seata/taas/pkg/util"
 )
 
 const (

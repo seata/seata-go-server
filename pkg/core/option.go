@@ -3,10 +3,10 @@ package core
 import (
 	"time"
 
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/election"
-	"github.com/infinivision/taas/pkg/id"
-	"github.com/infinivision/taas/pkg/lock"
+	"github.com/seata/taas/pkg/cedis"
+	"github.com/seata/taas/pkg/election"
+	"github.com/seata/taas/pkg/id"
+	"github.com/seata/taas/pkg/lock"
 )
 
 // Option option

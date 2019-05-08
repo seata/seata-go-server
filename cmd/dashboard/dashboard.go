@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/fagongzi/log"
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/core"
-	"github.com/infinivision/taas/pkg/dashboard"
-	"github.com/infinivision/taas/pkg/util"
+	"github.com/seata/taas/pkg/cedis"
+	"github.com/seata/taas/pkg/core"
+	"github.com/seata/taas/pkg/dashboard"
+	"github.com/seata/taas/pkg/util"
 )
 
 var (

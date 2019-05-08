@@ -7,7 +7,7 @@ import (
 	"github.com/fagongzi/log"
 	"github.com/fagongzi/util/json"
 	"github.com/garyburd/redigo/redis"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/meta"
 )
 
 func (tc *cellTransactionCoordinator) runTasks(ctx context.Context) {

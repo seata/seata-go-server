@@ -15,14 +15,14 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/fagongzi/log"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/core"
-	"github.com/infinivision/taas/pkg/election"
-	"github.com/infinivision/taas/pkg/id"
-	"github.com/infinivision/taas/pkg/lock"
-	"github.com/infinivision/taas/pkg/metrics"
-	"github.com/infinivision/taas/pkg/sharding"
-	"github.com/infinivision/taas/pkg/util"
+	"github.com/seata/taas/pkg/cedis"
+	"github.com/seata/taas/pkg/core"
+	"github.com/seata/taas/pkg/election"
+	"github.com/seata/taas/pkg/id"
+	"github.com/seata/taas/pkg/lock"
+	"github.com/seata/taas/pkg/metrics"
+	"github.com/seata/taas/pkg/sharding"
+	"github.com/seata/taas/pkg/util"
 )
 
 var (

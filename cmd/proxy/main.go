@@ -12,8 +12,8 @@ import (
 
 	"github.com/fagongzi/log"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/proxy"
-	"github.com/infinivision/taas/pkg/util"
+	"github.com/seata/taas/pkg/proxy"
+	"github.com/seata/taas/pkg/util"
 )
 
 var (

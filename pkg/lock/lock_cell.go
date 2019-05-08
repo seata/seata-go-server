@@ -2,8 +2,8 @@ package lock
 
 import (
 	"github.com/garyburd/redigo/redis"
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/cedis"
+	"github.com/seata/taas/pkg/meta"
 )
 
 // NewCellResourceLocker returns a lock base on cell

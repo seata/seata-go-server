@@ -9,10 +9,10 @@ import (
 	"github.com/fagongzi/log"
 	"github.com/fagongzi/util/json"
 	"github.com/fagongzi/util/task"
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/election"
-	"github.com/infinivision/taas/pkg/meta"
-	"github.com/infinivision/taas/pkg/transport"
+	"github.com/seata/taas/pkg/cedis"
+	"github.com/seata/taas/pkg/election"
+	"github.com/seata/taas/pkg/meta"
+	"github.com/seata/taas/pkg/transport"
 )
 
 const (

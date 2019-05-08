@@ -1,7 +1,7 @@
 package lock
 
 import (
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/meta"
 )
 
 // ResourceLock is a lock for resource

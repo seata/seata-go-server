@@ -5,8 +5,8 @@ import (
 
 	"github.com/fagongzi/util/json"
 	"github.com/garyburd/redigo/redis"
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/cedis"
+	"github.com/seata/taas/pkg/meta"
 )
 
 type cellQueryAPI struct {

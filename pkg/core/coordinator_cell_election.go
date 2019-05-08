@@ -8,7 +8,7 @@ import (
 	"github.com/fagongzi/goetty"
 	"github.com/fagongzi/log"
 	"github.com/fagongzi/util/json"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/meta"
 )
 
 func (tc *cellTransactionCoordinator) becomeLeader() {

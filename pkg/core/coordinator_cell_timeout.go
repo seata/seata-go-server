@@ -3,8 +3,8 @@ package core
 import (
 	"time"
 
-	"github.com/infinivision/taas/pkg/meta"
-	"github.com/infinivision/taas/pkg/util"
+	"github.com/seata/taas/pkg/meta"
+	"github.com/seata/taas/pkg/util"
 )
 
 func (tc *cellTransactionCoordinator) calcGTimeout(g *meta.GlobalTransaction) error {

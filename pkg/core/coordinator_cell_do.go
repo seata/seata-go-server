@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/fagongzi/log"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/meta"
 )
 
 func (tc *cellTransactionCoordinator) doRegistryGlobalTransaction(g *meta.GlobalTransaction) error {

@@ -7,7 +7,7 @@ import (
 	"github.com/fagongzi/log"
 	"github.com/fagongzi/util/json"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/meta"
 )
 
 type router struct {

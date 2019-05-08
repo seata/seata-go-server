@@ -2,8 +2,8 @@ package core
 
 import (
 	"github.com/fagongzi/util/json"
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/cedis"
+	"github.com/seata/taas/pkg/meta"
 )
 
 type cellManualAPI struct {

@@ -3,8 +3,8 @@ package core
 import (
 	"time"
 
-	"github.com/infinivision/taas/pkg/meta"
-	"github.com/infinivision/taas/pkg/metrics"
+	"github.com/seata/taas/pkg/meta"
+	"github.com/seata/taas/pkg/metrics"
 )
 
 type metricsListener struct {

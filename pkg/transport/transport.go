@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/infinivision/taas/pkg/util"
+	"github.com/seata/taas/pkg/util"
 
 	"github.com/fagongzi/log"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/meta"
 )
 
 // Transport transport

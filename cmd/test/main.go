@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/fagongzi/log"
-	"github.com/infinivision/taas/pkg/client"
-	"github.com/infinivision/taas/pkg/meta"
+	"github.com/seata/taas/pkg/client"
+	"github.com/seata/taas/pkg/meta"
 )
 
 type handler struct {
