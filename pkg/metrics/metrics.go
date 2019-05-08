@@ -10,4 +10,7 @@ func init() {
 	prometheus.Register(GDurationHistogram)
 	prometheus.Register(ActionBCounter)
 	prometheus.Register(BDurationHistogram)
+
+	prometheus.Register(FragmentGauge)
+	prometheus.Register(FragmentPeersGauge)
 }

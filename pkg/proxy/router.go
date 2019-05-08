@@ -18,7 +18,7 @@ type router struct {
 	stores         map[uint64]*meta.StoreMeta
 	frags          map[uint64]*meta.Fragment
 	availableFrags []uint64
-	leaders        map[uint64]uint64
+	leaders        map[uint64]uint64 // fid->peer id
 	opts           map[uint64]uint64
 	transports     map[uint64]*transport
 	initC          chan struct{}

@@ -300,8 +300,6 @@ func (c *Client) sentTask(addr string, q *task.Queue) {
 			if !cc.hasCallback() || cc.batch {
 				err := conn.WriteAndFlush(c.buildRPCMessage(cc.id, cc.msg))
 				if err != nil {
-					// TODO: remove
-					log.Fatalf("write failed %+v", err)
 					c.addToSendWithExclude(cc, addr)
 					available = false
 					conn.Close()

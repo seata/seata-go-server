@@ -22,3 +22,10 @@ const (
 	// PhaseTwo phase two
 	PhaseTwo = "two"
 )
+
+const (
+	// RoleLeader leader fragment
+	RoleLeader = "leader"
+	// RoleFollower follower fragment
+	RoleFollower = "follower"
+)

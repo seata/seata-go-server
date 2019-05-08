@@ -147,6 +147,7 @@ func (pr *PeerReplicate) collectDownPeers(maxDuration time.Duration) []*prophet.
 
 func (pr *PeerReplicate) becomeLeader() {
 	pr.stopTasks(true)
+	// TODO: too many concurrency
 	pr.addTask(pr.startHB)
 	pr.addTask(pr.startCheckConcurrency)
 }

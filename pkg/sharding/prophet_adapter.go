@@ -1,12 +1,14 @@
 package sharding
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/fagongzi/log"
 	"github.com/fagongzi/util/json"
 	"github.com/infinivision/prophet"
 	"github.com/infinivision/taas/pkg/meta"
+	"github.com/infinivision/taas/pkg/metrics"
 	"github.com/infinivision/taas/pkg/util"
 )
 
@@ -69,6 +71,9 @@ func (pa *ProphetAdapter) FetchContainerHB() *prophet.ContainerHeartbeatReq {
 	req.LeaderCount = st.fragmentLeaderCount
 	req.ReplicaCount = st.fragmentCount
 	req.Busy = false
+
+	metrics.FragmentGauge.WithLabelValues(metrics.RoleLeader).Set(float64(st.fragmentLeaderCount))
+	metrics.FragmentGauge.WithLabelValues(metrics.RoleFollower).Set(float64(st.fragmentCount - st.fragmentLeaderCount))
 	return req
 }
 
@@ -226,6 +231,8 @@ func getResourceHB(pr *PeerReplicate) *prophet.ResourceHeartbeatReq {
 	req.LeaderPeer = &pr.peer
 	req.PendingPeers = pr.collectPendingPeers()
 	req.DownPeers = pr.collectDownPeers(pr.store.cfg.MaxPeerDownDuration)
+
+	metrics.FragmentPeersGauge.WithLabelValues(fmt.Sprintf("%d", pr.id)).Set(float64(len(pr.frag.Peers)))
 	return req
 }
 

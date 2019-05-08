@@ -11,13 +11,7 @@ func (tc *cellTransactionCoordinator) doRegistryGlobalTransaction(g *meta.Global
 	tc.doAddG(g)
 
 	if g.Action != meta.NoneAction {
-		c := acquireCMD()
-		c.cmdType = cmdGComplete
-		c.gid = g.ID
-		err := tc.cmds.Put(c)
-		if err != nil {
-			return err
-		}
+		tc.doComplete(g.ID)
 	} else {
 		err := tc.calcGTimeout(g)
 		if err != nil {

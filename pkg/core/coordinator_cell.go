@@ -78,7 +78,7 @@ func NewCellTransactionCoordinator(id, peerID uint64, trans transport.Transport,
 	tc.peerID = peerID
 	tc.gidKey = gCellKey(id)
 	tc.manualKey = manualCellKey(id)
-	tc.cmds = task.NewRingBuffer(uint64(tc.opts.concurrency) * 4)
+	tc.cmds = task.NewRingBuffer(uint64(tc.opts.concurrency) * 64)
 	tc.trans = trans
 	tc.cell = tc.opts.cell
 	ctx, cancel := context.WithCancel(context.Background())
