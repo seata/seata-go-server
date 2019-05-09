@@ -239,9 +239,10 @@ func (s *store) addExpectLeader(frag uint64, oldLeaderPeerID, newLeaderPeerID ui
 		return fmt.Errorf("not leader")
 	}
 
-	log.Infof("[frag-%d]: new expect leader %d added",
+	log.Infof("[frag-%d]: new expect leader %d added, with %d secs ttl",
 		frag,
-		newLeaderPeerID)
+		newLeaderPeerID,
+		s.opts.leaseSec)
 	return nil
 }
 
@@ -268,9 +269,9 @@ func (s *store) getValue(key string, opts ...clientv3.OpOption) ([]byte, error) 
 		return nil, err
 	}
 
-	if n := len(resp.Kvs); n == 0 {
+	if resp.Count == 0 {
 		return nil, nil
-	} else if n > 1 {
+	} else if resp.Count > 1 {
 		return nil, fmt.Errorf("invalid get value resp %v, must only one", resp.Kvs)
 	}
 

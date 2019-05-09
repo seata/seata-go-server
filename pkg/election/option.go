@@ -30,7 +30,7 @@ func (opts *options) adjust() error {
 	}
 
 	if opts.leaseSec == 0 {
-		opts.leaseSec = 30
+		opts.leaseSec = 5
 	}
 
 	return nil

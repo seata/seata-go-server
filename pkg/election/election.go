@@ -126,6 +126,7 @@ func (e *elector) ElectionLoop(ctx context.Context, frag, currentPeerID uint64, 
 				log.Errorf("[frag-%d]: campaign leader failure, errors:\n %+v",
 					frag,
 					err)
+				time.Sleep(time.Second * time.Duration(e.opts.leaseSec))
 			}
 		}
 	}
