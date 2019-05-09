@@ -34,8 +34,8 @@ As the system runs, there will be many `Fragment`s and their copies in the syste
 
 ## Quickstart
 ```bash
-Git clone https//github.com/seata/taas.git
-Docker-compse up -d
+git clone https//github.com/seata/taas.git
+docker-compose up -d
 ```
 
 ### Seata Service Address
