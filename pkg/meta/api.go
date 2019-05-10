@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+var (
+	// EmptyQuery empty query
+	EmptyQuery Query
+)
+
 // JSONResult json result
 type JSONResult struct {
 	Code  int         `json:"code"`

@@ -7,7 +7,6 @@ import (
 
 	"github.com/fagongzi/goetty"
 	"github.com/fagongzi/log"
-	"github.com/fagongzi/util/json"
 	"github.com/infinivision/taas/pkg/meta"
 )
 
@@ -87,10 +86,7 @@ func (tc *cellTransactionCoordinator) cancelTasks() {
 }
 
 func (tc *cellTransactionCoordinator) loadTransactions() error {
-	err := tc.batchLoad(tc.gidKey, func(value []byte) error {
-		g := &meta.GlobalTransaction{}
-		json.MustUnmarshal(g, value)
-
+	err := tc.opts.storage.Load(tc.id, meta.Query{Limit: batch}, func(g *meta.GlobalTransaction) error {
 		g.StartAtTime = time.Unix(0, g.StartAt*int64(time.Millisecond))
 		for _, b := range g.Branches {
 			b.StartAtTime = time.Unix(0, b.StartAt*int64(time.Millisecond))
@@ -100,7 +96,6 @@ func (tc *cellTransactionCoordinator) loadTransactions() error {
 
 		return tc.doRegistryGlobalTransaction(g)
 	})
-
 	if err != nil {
 		return err
 	}

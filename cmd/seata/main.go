@@ -15,13 +15,12 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/fagongzi/log"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/cedis"
 	"github.com/infinivision/taas/pkg/core"
 	"github.com/infinivision/taas/pkg/election"
 	"github.com/infinivision/taas/pkg/id"
-	"github.com/infinivision/taas/pkg/lock"
 	"github.com/infinivision/taas/pkg/metrics"
 	"github.com/infinivision/taas/pkg/sharding"
+	"github.com/infinivision/taas/pkg/storage"
 	"github.com/infinivision/taas/pkg/util"
 )
 
@@ -29,7 +28,7 @@ var (
 	waitSeconds                        = flag.Int("wait", 0, "wait seconds")
 	nodeID                             = flag.Uint("id", 0, "Node ID")
 	addr                               = flag.String("addr", "127.0.0.1:8080", "Addr: seata server")
-	addrCell                           = flag.String("addr-cell", "127.0.0.1:6379", "Addr: cell proxy address")
+	addrStorage                        = flag.String("addr-store", "cell://127.0.0.1:6379", "Addr: meta storage addresss with protocol")
 	addrPeer                           = flag.String("addr-peer", "127.0.0.1:8081", "Addr: sharding fragment addr")
 	addrPPROF                          = flag.String("addr-pprof", "", "Addr: pprof addr")
 	dataPath                           = flag.String("data", "/tmp/taas", "Taas local data path")
@@ -41,13 +40,6 @@ var (
 	transportWorkerCount               = flag.Int("transport-worker", 1, "transport worker count")
 	ackTimeout                         = flag.Int("timeout-ack", 30, "Limit: RM ack timeout seconds")
 	commitIfAllBranchSucceedInPhaseOne = flag.Bool("commit-on-timeout", false, "Enable: Commit the global transaction if all branch transaction was succeed on timeout")
-	cellReties                         = flag.Int("cell-reties", 3, "retry time of operator cell")
-	cellMaxActive                      = flag.Int("cell-max-active", 100, "Limit: cell max active connections")
-	cellMaxIdle                        = flag.Int("cell-max-idle", 10, "Limit: cell max idle connections")
-	cellIdleTimeoutSec                 = flag.Int("cell-timeout-idle", 30, "Limit: cell connection idle timeout seconds")
-	cellDailTimeoutSec                 = flag.Int("cell-timeout-dail", 10, "Limit: cell connection dail timeout seconds")
-	cellReadTimeoutSec                 = flag.Int("cell-timeout-read", 30, "Limit: cell connection read timeout seconds")
-	cellWriteTimeoutSec                = flag.Int("cell-timeout-write", 10, "Limit: cell connection write timeout seconds")
 	electionLockPath                   = flag.String("election-lock-path", "/tmp/taas/lock/election", "election lock path")
 	electionLeaderPath                 = flag.String("election-leader-path", "/tmp/taas/election", "election leader path")
 	electionLease                      = flag.Int64("election-lease", 5, "election leader lease seconds")
@@ -193,24 +185,17 @@ func waitStop(s *sharding.Seata) {
 }
 
 func parseCoreOptions() []core.Option {
-	var cellOpts []cedis.Option
-	cellOpts = append(cellOpts, cedis.WithCellProxies(strings.Split(*addrCell, ",")...))
-	cellOpts = append(cellOpts, cedis.WithMaxActive(*cellMaxActive))
-	cellOpts = append(cellOpts, cedis.WithMaxIdle(*cellMaxIdle))
-	cellOpts = append(cellOpts, cedis.WithDailTimeout(time.Second*time.Duration(*cellDailTimeoutSec)))
-	cellOpts = append(cellOpts, cedis.WithIdleTimeout(time.Second*time.Duration(*cellIdleTimeoutSec)))
-	cellOpts = append(cellOpts, cedis.WithReadTimeout(time.Second*time.Duration(*cellReadTimeoutSec)))
-	cellOpts = append(cellOpts, cedis.WithWriteTimeout(time.Second*time.Duration(*cellWriteTimeoutSec)))
+	store, err := storage.CreateStorage(*addrStorage)
+	if err != nil {
+		log.Fatalf("init storage failed with %+v", err)
+	}
 
 	var opts []core.Option
-	cell := cedis.NewCedis(cellOpts...)
 	opts = append(opts, core.WithIDGenerator(id.NewSnowflakeGenerator(uint16(*nodeID))))
-	opts = append(opts, core.WithRetries(*cellReties))
 	opts = append(opts, core.WithTransactionTimeout(time.Second*time.Duration(*transactionTimeoutSec)))
 	opts = append(opts, core.WithACKTimeout(time.Second*time.Duration(*ackTimeout)))
 	opts = append(opts, core.WithCommitIfAllBranchSucceedInPhaseOne(*commitIfAllBranchSucceedInPhaseOne))
-	opts = append(opts, core.WithCell(cell))
-	opts = append(opts, core.WithResourceLock(lock.NewCellResourceLocker(cell)))
+	opts = append(opts, core.WithStorage(store))
 	opts = append(opts, core.WithElectorOptions(election.WithLeaderLeaseSec(*electionLease),
 		election.WithLeaderPath(*electionLeaderPath),
 		election.WithLockPath(*electionLockPath)))

@@ -3,10 +3,9 @@ package core
 import (
 	"time"
 
-	"github.com/infinivision/taas/pkg/cedis"
 	"github.com/infinivision/taas/pkg/election"
 	"github.com/infinivision/taas/pkg/id"
-	"github.com/infinivision/taas/pkg/lock"
+	"github.com/infinivision/taas/pkg/storage"
 )
 
 // Option option
@@ -14,14 +13,13 @@ type Option func(*options)
 
 type options struct {
 	gen                                id.Generator
-	cell                               *cedis.Cedis
+	storage                            storage.Storage
 	retries                            int
 	transactionTimeout                 time.Duration
 	ackTimeout                         time.Duration
 	commitIfAllBranchSucceedInPhaseOne bool
 	elector                            election.Elector
 	electorOptions                     []election.Option
-	lock                               lock.ResourceLock
 	concurrency                        int
 	becomeLeader, becomeFollower       func()
 }
@@ -48,10 +46,10 @@ func (opts *options) adjust() {
 	}
 }
 
-// WithCell set cell options
-func WithCell(value *cedis.Cedis) Option {
+// WithStorage set meta storage options
+func WithStorage(value storage.Storage) Option {
 	return func(opts *options) {
-		opts.cell = value
+		opts.storage = value
 	}
 }
 
@@ -83,13 +81,6 @@ func WithTransactionTimeout(value time.Duration) Option {
 	}
 }
 
-// WithRetries set retries times
-func WithRetries(value int) Option {
-	return func(opts *options) {
-		opts.retries = value
-	}
-}
-
 // WithACKTimeout set ackTimeout times
 func WithACKTimeout(value time.Duration) Option {
 	return func(opts *options) {
@@ -109,13 +100,6 @@ func WithStatusChangeAware(becomeLeader, becomeFollower func()) Option {
 	return func(opts *options) {
 		opts.becomeLeader = becomeLeader
 		opts.becomeFollower = becomeFollower
-	}
-}
-
-// WithResourceLock set resource lock value
-func WithResourceLock(lock lock.ResourceLock) Option {
-	return func(opts *options) {
-		opts.lock = lock
 	}
 }
 

@@ -50,7 +50,7 @@ services:
       - --init=32
       - --log-level=info
       - --addr=seata1:8080
-      - --addr-cell=cell:6379
+      - --addr-store=cell://cell:6379
       - --addr-peer=seata1:9090
       - --prophet-addr=seata1:9529
       - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
@@ -76,7 +76,7 @@ services:
       - --init=32
       - --log-level=info
       - --addr=seata2:8080
-      - --addr-cell=cell:6379
+      - --addr-store=cell://cell:6379
       - --addr-peer=seata2:9090
       - --prophet-addr=seata2:9529
       - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
@@ -102,7 +102,7 @@ services:
       - --init=32
       - --log-level=info
       - --addr=seata3:8080
-      - --addr-cell=cell:6379
+      - --addr-store=cell://cell:6379
       - --addr-peer=seata3:9090
       - --prophet-addr=seata3:9529
       - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
@@ -139,5 +139,5 @@ services:
       - "8084:8080"
     command:
       - --addr=:8080
-      - --addr-cell=cell:6379
+      - --addr-store=cell://cell:6379
       - --addr-prophet=seata1:9529,seata2:9529,seata3:9529

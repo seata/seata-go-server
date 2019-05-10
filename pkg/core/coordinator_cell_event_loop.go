@@ -357,7 +357,7 @@ func (tc *cellTransactionCoordinator) handleRegistryBranchTransaction(c *cmd) {
 		BranchType:  c.createB.BranchType,
 	}
 
-	ok, conflict, err := tc.opts.lock.Lock(c.createB.ResourceID, c.createB.GID, b.LockKeys...)
+	ok, conflict, err := tc.opts.storage.Lock(c.createB.ResourceID, c.createB.GID, b.LockKeys...)
 	if err != nil {
 		log.Fatalf("%s: lock failed with %+v, %s",
 			meta.TagGlobalTransaction(c.createB.GID, "reg_branch"),
@@ -707,7 +707,7 @@ func (tc *cellTransactionCoordinator) handleBNotifyACK(c *cmd) {
 	}
 
 	if unlock {
-		err := tc.opts.lock.Unlock(target.Resource, target.LockKeys...)
+		err := tc.opts.storage.Unlock(target.Resource, target.LockKeys...)
 		if err != nil {
 			log.Fatalf("%s: unlock failed with %+v",
 				meta.TagBranchTransaction(ack.GID, ack.BID, "ack"),
@@ -760,7 +760,7 @@ func (tc *cellTransactionCoordinator) handleLockable(c *cmd) {
 			meta.TagGlobalTransaction(c.gid, "query_lock"))
 	}
 
-	ok, conflict, err := tc.opts.lock.Lockable(c.resource, c.gid, c.lockKeys...)
+	ok, conflict, err := tc.opts.storage.Lockable(c.resource, c.gid, c.lockKeys...)
 	if err != nil {
 		log.Fatalf("%s: lockable failed with %+v",
 			meta.TagGlobalTransaction(c.gid, "query_lock"),

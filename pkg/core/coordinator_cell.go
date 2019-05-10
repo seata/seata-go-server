@@ -7,9 +7,7 @@ import (
 
 	"github.com/fagongzi/goetty"
 	"github.com/fagongzi/log"
-	"github.com/fagongzi/util/json"
 	"github.com/fagongzi/util/task"
-	"github.com/infinivision/taas/pkg/cedis"
 	"github.com/infinivision/taas/pkg/election"
 	"github.com/infinivision/taas/pkg/meta"
 	"github.com/infinivision/taas/pkg/transport"
@@ -25,7 +23,6 @@ type cellTransactionCoordinator struct {
 	id, peerID, leaderPeerID uint64
 
 	idLabel string
-	cell    *cedis.Cedis
 	trans   transport.Transport
 
 	leader  bool
@@ -76,11 +73,9 @@ func NewCellTransactionCoordinator(id, peerID uint64, trans transport.Transport,
 	tc.id = id
 	tc.idLabel = fmt.Sprintf("%d", id)
 	tc.peerID = peerID
-	tc.gidKey = gCellKey(id)
 	tc.manualKey = manualCellKey(id)
 	tc.cmds = task.NewRingBuffer(uint64(tc.opts.concurrency) * 64)
 	tc.trans = trans
-	tc.cell = tc.opts.cell
 	ctx, cancel := context.WithCancel(context.Background())
 	tc.cancel = cancel
 	go tc.elector.ElectionLoop(ctx, id, peerID, func(data uint64) bool {
@@ -306,33 +301,19 @@ func (tc *cellTransactionCoordinator) mustDo(doFunc func() error) error {
 }
 
 func (tc *cellTransactionCoordinator) mustSave(g *meta.GlobalTransaction) {
-	conn := tc.cell.Get()
-	err := tc.mustDo(func() error {
-		_, err := conn.Do("HSET", tc.gidKey, g.ID, json.MustMarshal(g))
-		return err
-	})
-
-	if err != nil {
+	if err := tc.opts.storage.Put(tc.id, g); err != nil {
 		log.Fatalf("%s: failed with %+v",
 			meta.TagGlobalTransaction(g.ID, "save"),
 			err)
 	}
-	conn.Close()
 }
 
 func (tc *cellTransactionCoordinator) removeGlobalTransaction(g *meta.GlobalTransaction) {
-	conn := tc.cell.Get()
-	err := tc.mustDo(func() error {
-		_, err := conn.Do("HDEL", tc.gidKey, g.ID)
-		return err
-	})
-
-	if err != nil {
+	if err := tc.opts.storage.Remove(tc.id, g); err != nil {
 		log.Fatalf("%s: failed with %+v",
 			meta.TagGlobalTransaction(g.ID, "remove"),
 			err)
 	}
-	conn.Close()
 
 	tc.doRemoveG(g.ID)
 	log.Infof("%s: with status %s",
