@@ -34,8 +34,8 @@ Taas本身不存储全局事务的元数据，元数据存储在[Elasticell](htt
 
 ## 快速体验
 ```bash
-git clone https//github.com/seata/taas.git
-docker-compse up -d
+git clone https://github.com/seata/taas.git
+docker-compose up -d
 ```
 
 ### Seata服务地址
