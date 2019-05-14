@@ -7,7 +7,7 @@ import (
 
 var (
 	// EmptyQuery empty query
-	EmptyQuery Query
+	EmptyQuery = Query{Status: -1, Action: -1}
 )
 
 // JSONResult json result

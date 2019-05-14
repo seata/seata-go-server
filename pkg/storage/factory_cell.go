@@ -46,7 +46,7 @@ func createElasticellStorage(u *url.URL) (Storage, error) {
 	}
 
 	dailTimeout := u.Query().Get(paramDailTimeout)
-	if idleTimeout != "" {
+	if dailTimeout != "" {
 		cellOpts = append(cellOpts, cedis.WithDailTimeout(time.Second*time.Duration(format.MustParseStrInt64(dailTimeout))))
 	}
 

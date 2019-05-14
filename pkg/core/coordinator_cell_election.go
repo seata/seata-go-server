@@ -86,7 +86,9 @@ func (tc *cellTransactionCoordinator) cancelTasks() {
 }
 
 func (tc *cellTransactionCoordinator) loadTransactions() error {
-	err := tc.opts.storage.Load(tc.id, meta.Query{Limit: batch}, func(g *meta.GlobalTransaction) error {
+	q := meta.EmptyQuery
+	q.Limit = batch
+	err := tc.opts.storage.Load(tc.id, q, func(g *meta.GlobalTransaction) error {
 		g.StartAtTime = time.Unix(0, g.StartAt*int64(time.Millisecond))
 		for _, b := range g.Branches {
 			b.StartAtTime = time.Unix(0, b.StartAt*int64(time.Millisecond))
