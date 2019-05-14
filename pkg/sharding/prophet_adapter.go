@@ -1,7 +1,6 @@
 package sharding
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/fagongzi/log"
@@ -232,7 +231,6 @@ func getResourceHB(pr *PeerReplicate) *prophet.ResourceHeartbeatReq {
 	req.PendingPeers = pr.collectPendingPeers()
 	req.DownPeers = pr.collectDownPeers(pr.store.cfg.MaxPeerDownDuration)
 
-	metrics.FragmentPeersGauge.WithLabelValues(fmt.Sprintf("%d", pr.id)).Set(float64(len(pr.frag.Peers)))
 	return req
 }
 

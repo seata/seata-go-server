@@ -87,7 +87,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(rate(taas_seata_global_active_total[1m]))",
+                            "expr": "sum(taas_seata_global_active_total)",
                             "intervalFactor": 2,
                             "refId": "A",
                             "step": 2
