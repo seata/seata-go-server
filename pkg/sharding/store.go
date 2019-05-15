@@ -73,6 +73,32 @@ func (s *Store) Start() {
 	if err != nil {
 		log.Fatalf("run gc task failed with %+v", err)
 	}
+
+	_, err = s.runner.RunCancelableTask(s.runManualTask)
+	if err != nil {
+		log.Fatalf("run manual task failed with %+v", err)
+	}
+
+	_, err = s.runner.RunCancelableTask(s.runHBTask)
+	if err != nil {
+		log.Fatalf("run hb task failed with %+v", err)
+	}
+
+	_, err = s.runner.RunCancelableTask(s.runCheckConcurrencyTask)
+	if err != nil {
+		log.Fatalf("run check concurrency task failed with %+v", err)
+	}
+
+	for i := 0; i < s.cfg.PRWorkerCount; i++ {
+		idx := uint64(i)
+		_, err = s.runner.RunCancelableTask(func(ctx context.Context) {
+			s.runPRTask(ctx, idx)
+		})
+		if err != nil {
+			log.Fatalf("run pr event loop task failed with %+v", err)
+		}
+	}
+
 }
 
 func (s *Store) startFragments() error {
@@ -96,6 +122,7 @@ func (s *Store) startFragments() error {
 }
 
 func (s *Store) doAddPR(pr *PeerReplicate) {
+	pr.workerID = uint64(s.cfg.PRWorkerCount-1) & pr.id
 	s.replicates.Store(pr.id, pr)
 }
 
@@ -106,7 +133,7 @@ func (s *Store) doRemovePR(id uint64) {
 func (s *Store) foreachFragments(doFunc func(pr *PeerReplicate)) {
 	s.replicates.Range(func(key, value interface{}) bool {
 		doFunc(value.(*PeerReplicate))
-		return false
+		return true
 	})
 }
 
@@ -249,58 +276,6 @@ func (s *Store) handleRenewRMLease(pid, sid string) {
 			}
 		}
 	}
-}
-
-func (s *Store) runGCRMTask(ctx context.Context) {
-	gcRMticker := time.NewTicker(s.cfg.RMLease)
-	defer gcRMticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			log.Infof("[GC-RM]: task exit")
-			return
-		case <-gcRMticker.C:
-			s.doGCRM()
-		}
-	}
-}
-
-func (s *Store) doGCRM() {
-	log.Debugf("[GC-RM]: start")
-
-	now := time.Now()
-	newResources := make(map[string][]meta.ResourceManager, len(s.resources))
-
-	s.Lock()
-	defer s.Unlock()
-
-	var values []string
-	for key, rms := range s.resources {
-		var newRMS []meta.ResourceManager
-		for _, rm := range rms {
-			if now.Sub(rm.LastHB) > s.cfg.RMLease {
-				values = append(values, rm.RMSID)
-			} else {
-				newRMS = append(newRMS, rm)
-			}
-		}
-		s.resources[key] = newRMS
-	}
-
-	if len(values) == 0 {
-		return
-	}
-
-	for _, rm := range values {
-		log.Infof("[GC-RM]: %s removed by timeout",
-			rm)
-	}
-
-	s.resources = newResources
-	log.Infof("[GC-RM]: complete with %d timeout rm",
-		len(values))
-	return
 }
 
 func (s *Store) rmAddrDetecter(fid uint64, resource string) (meta.ResourceManager, error) {

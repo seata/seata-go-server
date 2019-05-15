@@ -1,8 +1,6 @@
 package core
 
 import (
-	"context"
-	"sync"
 	"time"
 
 	"github.com/fagongzi/goetty"
@@ -38,27 +36,11 @@ func (tc *cellTransactionCoordinator) reset() {
 	tc.gids = make(map[uint64]*meta.GlobalTransaction)
 	tc.timeouts = make(map[uint64]goetty.Timeout)
 	tc.notifyTimeouts = make(map[string]goetty.Timeout)
-	tc.tasks = make([]uint64, 0, 0)
-	tc.wg = &sync.WaitGroup{}
 
 	tc.initEvent()
 
 	log.Infof("[frag-%d]: reset",
 		tc.id)
-}
-
-func (tc *cellTransactionCoordinator) loadTasks() {
-	tc.addTask(tc.runTasks)
-}
-
-func (tc *cellTransactionCoordinator) addTask(taskFunc func(ctx context.Context)) {
-	id, err := tc.runner.RunCancelableTask(taskFunc)
-	if err != nil {
-		log.Fatalf("run tasks failed, %+v",
-			err)
-	}
-	tc.tasks = append(tc.tasks, id)
-	tc.wg.Add(1)
 }
 
 func (tc *cellTransactionCoordinator) cancelTimeouts() {
@@ -72,17 +54,6 @@ func (tc *cellTransactionCoordinator) cancelTimeouts() {
 
 	log.Infof("[frag-%d]: all transaction timeout cancelled",
 		tc.id)
-}
-
-func (tc *cellTransactionCoordinator) cancelTasks() {
-	for _, id := range tc.tasks {
-		tc.runner.StopCancelableTask(id)
-	}
-
-	// wait all task complete
-	if len(tc.tasks) > 0 {
-		tc.wg.Wait()
-	}
 }
 
 func (tc *cellTransactionCoordinator) loadTransactions() error {

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -125,74 +124,70 @@ func (c *cmd) respBool(value bool, err error) {
 	}
 }
 
-func (tc *cellTransactionCoordinator) startEventLoop(ctx context.Context) {
-	log.Infof("[frag-%d]: start the event loop", tc.id)
-
-	for {
-		if tc.cmds.Len() == 0 && !tc.cmds.IsDisposed() {
-			time.Sleep(time.Millisecond * 10)
-			continue
-		}
-
-		data, err := tc.cmds.Get()
-		if err != nil {
-			log.Infof("[frag-%d]: exit event loop", tc.id)
-			return
-		}
-
-		c := data.(*cmd)
-		switch c.cmdType {
-		case cmdUnknown:
-			break
-		case cmdTransferLeader:
-			tc.handleTransferLeader(c)
-			break
-		case cmdBecomeLeader:
-			tc.handleBecomeLeader()
-			break
-		case cmdBecomeFollower:
-			tc.handleBecomeFollower()
-			break
-		case cmdRegistryG:
-			tc.handleRegistryGlobalTransaction(c)
-			break
-		case cmdRegistryB:
-			tc.handleRegistryBranchTransaction(c)
-			break
-		case cmdReportB:
-			tc.handleReportB(c)
-			break
-		case cmdStatusG:
-			tc.handleGlobalTransactionStatus(c)
-			break
-		case cmdCommitG:
-			tc.handleCommitGlobalTransaction(c)
-			break
-		case cmdRollbackG:
-			tc.handleRollbackGlobalTransaction(c)
-			break
-		case cmdACKB:
-			tc.handleBNotifyACK(c)
-			break
-		case cmdLockable:
-			tc.handleLockable(c)
-			break
-		case cmdGTimeout:
-			tc.handleGTimeout(c)
-			break
-		case cmdGComplete:
-			tc.handleGComplete(c)
-			break
-		case cmdCalcBNotifyTimeout:
-			tc.handleCalcBNotifyTimeout(c)
-			break
-		case cmdBNotifyTimeout:
-			tc.handleBNotifyTimeout(c)
-			break
-		}
-
-		releaseCMD(c)
+func (tc *cellTransactionCoordinator) HandleEvent() bool {
+	if tc.cmds.Len() == 0 && !tc.cmds.IsDisposed() {
+		return false
 	}
+
+	data, err := tc.cmds.Get()
+	if err != nil {
+		return false
+	}
+
+	c := data.(*cmd)
+	switch c.cmdType {
+	case cmdUnknown:
+		break
+	case cmdTransferLeader:
+		tc.handleTransferLeader(c)
+		break
+	case cmdBecomeLeader:
+		tc.handleBecomeLeader()
+		break
+	case cmdBecomeFollower:
+		tc.handleBecomeFollower()
+		break
+	case cmdRegistryG:
+		tc.handleRegistryGlobalTransaction(c)
+		break
+	case cmdRegistryB:
+		tc.handleRegistryBranchTransaction(c)
+		break
+	case cmdReportB:
+		tc.handleReportB(c)
+		break
+	case cmdStatusG:
+		tc.handleGlobalTransactionStatus(c)
+		break
+	case cmdCommitG:
+		tc.handleCommitGlobalTransaction(c)
+		break
+	case cmdRollbackG:
+		tc.handleRollbackGlobalTransaction(c)
+		break
+	case cmdACKB:
+		tc.handleBNotifyACK(c)
+		break
+	case cmdLockable:
+		tc.handleLockable(c)
+		break
+	case cmdGTimeout:
+		tc.handleGTimeout(c)
+		break
+	case cmdGComplete:
+		tc.handleGComplete(c)
+		break
+	case cmdCalcBNotifyTimeout:
+		tc.handleCalcBNotifyTimeout(c)
+		break
+	case cmdBNotifyTimeout:
+		tc.handleBNotifyTimeout(c)
+		break
+	}
+
+	releaseCMD(c)
+
+	return true
 }
 
 func (tc *cellTransactionCoordinator) handleTransferLeader(c *cmd) {
@@ -237,10 +232,6 @@ func (tc *cellTransactionCoordinator) handleBecomeLeader() {
 		tc.id,
 		tc.doGetGCount())
 
-	tc.loadTasks()
-	log.Infof("[frag-%d]: all task loadded",
-		tc.id)
-
 	if tc.opts.becomeLeader != nil {
 		tc.opts.becomeLeader()
 	}
@@ -256,7 +247,6 @@ func (tc *cellTransactionCoordinator) handleBecomeFollower() {
 
 	tc.leader = false
 	tc.cancelTimeouts()
-	tc.cancelTasks()
 
 	if tc.opts.becomeFollower != nil {
 		tc.opts.becomeFollower()

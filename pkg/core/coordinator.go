@@ -21,6 +21,13 @@ type TransactionCoordinator interface {
 	// CurrentLeader returns the current leader
 	CurrentLeader() (uint64, error)
 
+	// HandleEvent process event
+	// return false if no event
+	HandleEvent() bool
+
+	// HandleManual process manual requests
+	HandleManual()
+
 	// RegistryGlobalTransaction registry a global transaction
 	RegistryGlobalTransaction(value meta.CreateGlobalTransaction, cb func(uint64, error))
 

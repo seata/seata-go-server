@@ -38,6 +38,7 @@ var (
 	rmLeaseSec                         = flag.Int("rm-lease", 30, "Limit: rm lease seconds")
 	transactionTimeoutSec              = flag.Int("timeout-transaction", 30, "Limit: transaction timeout seconds")
 	transportWorkerCount               = flag.Int("transport-worker", 1, "transport worker count")
+	prWorkerCount                      = flag.Int("fragment-worker", 128, "fragment worker count")
 	ackTimeout                         = flag.Int("timeout-ack", 30, "Limit: RM ack timeout seconds")
 	commitIfAllBranchSucceedInPhaseOne = flag.Bool("commit-on-timeout", false, "Enable: Commit the global transaction if all branch transaction was succeed on timeout")
 	electionLockPath                   = flag.String("election-lock-path", "/tmp/taas/lock/election", "election lock path")
@@ -47,7 +48,7 @@ var (
 	fragHBIntervalSec                  = flag.Int("heartbeat-frag", 5, "HB(sec): fragment heartbeat")
 	maxPeerDownSec                     = flag.Int("peer-max-downtime", 30, "Max(sec): max peer down time in seconds")
 	initFragmentCounts                 = flag.Int("init", 1, "Count: init fragment count")
-	concurrency                        = flag.Int("concurrency", 5000, "Count: fragment max concurrent")
+	concurrency                        = flag.Int("concurrency", 256, "Count: fragment max concurrent")
 	overloadPercentage                 = flag.Uint64("overload-percentage", 10, "Percentage of overload times in the statistical period")
 	overloadPeriod                     = flag.Uint64("overload-period", 60, "Statistical overload period in seconds")
 
@@ -153,6 +154,7 @@ func main() {
 		OverloadPercentage: *overloadPercentage,
 		OverloadPeriod:     *overloadPeriod,
 		TransWorkerCount:   *transportWorkerCount,
+		PRWorkerCount:      *prWorkerCount,
 	})
 	if err != nil {
 		log.Fatalf("create seata server failed, %+v", err)

@@ -47,7 +47,8 @@ services:
     command:
       - --wait=10
       - --id=1
-      - --init=32
+      - --init=128
+      - --fragment-worker=32
       - --log-level=info
       - --addr=seata1:8080
       - --addr-store=cell://cell:6379?maxActive=100&maxIdle=50&idleTimeout=120
@@ -73,7 +74,8 @@ services:
     command:
       - --wait=10
       - --id=2
-      - --init=32
+      - --init=128
+      - --fragment-worker=32
       - --log-level=info
       - --addr=seata2:8080
       - --addr-store=cell://cell:6379?maxActive=100&maxIdle=50&idleTimeout=120
@@ -99,7 +101,8 @@ services:
     command:
       - --wait=10
       - --id=3
-      - --init=32
+      - --init=128
+      - --fragment-worker=32
       - --log-level=info
       - --addr=seata3:8080
       - --addr-store=cell://cell:6379?maxActive=100&maxIdle=50&idleTimeout=120

@@ -28,6 +28,7 @@ type Cfg struct {
 	OverloadPeriod      uint64
 	TransSendCB         func(meta.ResourceManager, meta.Notify) error
 	TransWorkerCount    int
+	PRWorkerCount       int
 }
 
 // Adjust adjust

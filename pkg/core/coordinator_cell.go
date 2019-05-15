@@ -3,7 +3,6 @@ package core
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/fagongzi/goetty"
 	"github.com/fagongzi/log"
@@ -36,10 +35,6 @@ type cellTransactionCoordinator struct {
 	eventListeners  []eventListener
 	metricsListener *metricsListener
 
-	wg     *sync.WaitGroup
-	runner *task.Runner
-	tasks  []uint64
-
 	gidKey    string
 	manualKey string
 
@@ -49,9 +44,7 @@ type cellTransactionCoordinator struct {
 
 // NewCellTransactionCoordinator create a transaction coordinator used Elasticell with meta storage
 func NewCellTransactionCoordinator(id, peerID uint64, trans transport.Transport, opts ...Option) (TransactionCoordinator, error) {
-	tc := &cellTransactionCoordinator{
-		runner: task.NewRunner(),
-	}
+	tc := &cellTransactionCoordinator{}
 
 	for _, opt := range opts {
 		opt(&tc.opts)
@@ -74,7 +67,7 @@ func NewCellTransactionCoordinator(id, peerID uint64, trans transport.Transport,
 	tc.idLabel = fmt.Sprintf("%d", id)
 	tc.peerID = peerID
 	tc.manualKey = manualCellKey(id)
-	tc.cmds = task.NewRingBuffer(uint64(tc.opts.concurrency) * 64)
+	tc.cmds = task.NewRingBuffer(uint64(tc.opts.concurrency) * 4)
 	tc.trans = trans
 	ctx, cancel := context.WithCancel(context.Background())
 	tc.cancel = cancel
@@ -83,7 +76,6 @@ func NewCellTransactionCoordinator(id, peerID uint64, trans transport.Transport,
 	}, tc.becomeLeader, tc.becomeFollower)
 
 	tc.metricsListener = &metricsListener{tc: tc}
-	go tc.startEventLoop(ctx)
 	return tc, nil
 }
 
@@ -123,6 +115,66 @@ func (tc *cellTransactionCoordinator) CurrentLeader() (uint64, error) {
 
 func (tc *cellTransactionCoordinator) ActiveGCount() int {
 	return tc.doGetGCount()
+}
+
+func (tc *cellTransactionCoordinator) HandleManual() {
+	log.Debugf("[frag-%d]: manual start",
+		tc.id)
+
+	cnt, err := tc.opts.storage.Manual(tc.id, func(manual *meta.Manual) error {
+		log.Infof("%s: schedule to %s",
+			meta.TagGlobalTransaction(manual.GID, "manual"),
+			manual.Action.Name())
+
+		c := acquireCMD()
+		c.gid = manual.GID
+
+		switch manual.Action {
+		case meta.CommitAction:
+			c.cmdType = cmdCommitG
+		case meta.RollbackAction:
+			c.cmdType = cmdRollbackG
+		default:
+			log.Fatalf("bug: not support manual action %s",
+				manual.Action.Name())
+		}
+
+		completeC := make(chan error, 1)
+		c.statusCB = func(status meta.GlobalStatus, err error) {
+			if err != nil {
+				completeC <- err
+				return
+			}
+
+			log.Infof("%s: schedule to %s with %s",
+				meta.TagGlobalTransaction(manual.GID, "manual"),
+				manual.Action.Name(),
+				status.Name())
+			completeC <- nil
+		}
+		tc.cmds.Put(c)
+
+		err := <-completeC
+		if err != nil {
+			log.Warnf("%s: schedule to %s failed with %+v",
+				meta.TagGlobalTransaction(manual.GID, "manual"),
+				manual.Action.Name(),
+				err)
+		}
+
+		return err
+	})
+	if err != nil {
+		log.Errorf("[frag-%d]: handle manual failed with %+v",
+			tc.id,
+			err)
+		return
+	}
+
+	if cnt == 0 {
+		log.Debugf("[frag-%d]: no manual schedule", tc.id)
+		return
+	}
 }
 
 // RegistryGlobalTransaction registry a global transaction

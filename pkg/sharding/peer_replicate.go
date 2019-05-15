@@ -1,7 +1,6 @@
 package sharding
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -18,6 +17,7 @@ type PeerReplicate struct {
 
 	tag           string
 	id            uint64
+	workerID      uint64
 	store         *Store
 	peer          prophet.Peer
 	frag          meta.Fragment
@@ -26,7 +26,7 @@ type PeerReplicate struct {
 	tc            core.TransactionCoordinator
 	tasks         []uint64
 
-	overloadTimes uint64
+	overloadTimes, overloadCheckTimes uint64
 }
 
 func createPeerReplicate(store *Store, frag meta.Fragment) (*PeerReplicate, error) {
@@ -55,8 +55,7 @@ func newPeerReplicate(store *Store, frag meta.Fragment, peer prophet.Peer) *Peer
 	pr.store = store
 	pr.heartbeatsMap = &sync.Map{}
 
-	opts := append(store.cfg.CoreOptions, core.WithStatusChangeAware(pr.becomeLeader, pr.becomeFollower))
-	opts = append(opts, core.WithConcurrency(store.cfg.Concurrency))
+	opts := append(store.cfg.CoreOptions, core.WithConcurrency(store.cfg.Concurrency))
 	tc, err := core.NewCellTransactionCoordinator(frag.ID, peer.ID, store.seataTrans, opts...)
 	if err != nil {
 		log.Fatalf("%s init failed with %+v",
@@ -111,7 +110,6 @@ func (pr *PeerReplicate) removePendingPeer(peer prophet.Peer) {
 }
 
 func (pr *PeerReplicate) destroy() {
-	pr.stopTasks(false)
 	pr.tc.Stop()
 }
 
@@ -145,59 +143,6 @@ func (pr *PeerReplicate) collectDownPeers(maxDuration time.Duration) []*prophet.
 	return downPeers
 }
 
-func (pr *PeerReplicate) becomeLeader() {
-	pr.stopTasks(true)
-	// TODO: too many concurrency
-	pr.addTask(pr.startHB)
-	pr.addTask(pr.startCheckConcurrency)
-}
-
-func (pr *PeerReplicate) becomeFollower() {
-	pr.stopTasks(true)
-	log.Infof("[frag-%d]: all tasks stopped",
-		pr.id)
-}
-
-func (pr *PeerReplicate) stopTasks(lock bool) {
-	if lock {
-		pr.Lock()
-		defer pr.Unlock()
-	}
-
-	for _, id := range pr.tasks {
-		pr.store.runner.StopCancelableTask(id)
-	}
-}
-
-func (pr *PeerReplicate) addTask(task func(ctx context.Context)) {
-	pr.Lock()
-	defer pr.Unlock()
-
-	id, err := pr.store.runner.RunCancelableTask(task)
-	if err != nil {
-		log.Fatalf("%s add task failed with %+v",
-			pr.tag,
-			err)
-	}
-	pr.tasks = append(pr.tasks, id)
-}
-
-func (pr *PeerReplicate) startHB(ctx context.Context) {
-	ticker := time.NewTicker(pr.store.cfg.MaxPeerDownDuration / 5)
-	defer ticker.Stop()
-
-	log.Infof("%s start hb task", pr.tag)
-	for {
-		select {
-		case <-ctx.Done():
-			log.Infof("%s hb task stopped", pr.tag)
-			return
-		case <-ticker.C:
-			pr.doHB()
-		}
-	}
-}
-
 func (pr *PeerReplicate) doHB() {
 	pr.RLock()
 	defer pr.RUnlock()
@@ -211,41 +156,26 @@ func (pr *PeerReplicate) doHB() {
 	}
 }
 
-func (pr *PeerReplicate) startCheckConcurrency(ctx context.Context) {
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
-	count := uint64(0)
-	log.Infof("%s start check concurrency task", pr.tag)
-	for {
-		if pr.frag.DisableGrow {
-			log.Infof("%s disable grow", pr.tag)
-			return
-		}
-
-		select {
-		case <-ctx.Done():
-			log.Infof("%s check concurrency task stopped", pr.tag)
-			return
-		case <-ticker.C:
-			pr.doCheck()
-		}
-
-		count++
-		if count == pr.store.cfg.OverloadPeriod {
-			if pr.maybeGrow() {
-				log.Infof("%s already grow, check concurrency task stopped",
-					pr.tag)
-				return
-			}
-			count = 0
-		}
+func (pr *PeerReplicate) doCheckConcurrency() {
+	if pr.frag.DisableGrow {
+		log.Infof("%s disable grow", pr.tag)
+		return
 	}
-}
 
-func (pr *PeerReplicate) doCheck() {
+	log.Debugf("%s start check concurrency task", pr.tag)
+
 	if pr.tc.ActiveGCount() > pr.store.cfg.Concurrency {
 		pr.overloadTimes++
+	}
+
+	pr.overloadCheckTimes++
+	if pr.overloadCheckTimes == pr.store.cfg.OverloadPeriod {
+		if pr.maybeGrow() {
+			log.Infof("%s already grow, check concurrency task stopped",
+				pr.tag)
+			return
+		}
+		pr.overloadCheckTimes = 0
 	}
 }
 
