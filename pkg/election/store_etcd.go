@@ -24,10 +24,11 @@ type store struct {
 
 	opts   options
 	client *clientv3.Client
+	lessor clientv3.Lease
 
 	watchers      map[uint64]clientv3.Watcher
 	watcheCancels map[uint64]context.CancelFunc
-	leasors       map[uint64]clientv3.Lease
+	leasors       map[uint64]clientv3.LeaseID
 }
 
 func (s *store) currentLeader(frag uint64) (uint64, error) {
@@ -95,13 +96,9 @@ func (s *store) campaignLeader(frag, leaderPeerID uint64, becomeLeader, becomeFo
 
 	path := getFragPath(s.opts.leaderPath, frag)
 
-	lessor := clientv3.NewLease(s.client)
-	s.addLessor(frag, lessor)
-	defer s.closeLessor(frag)
-
 	start := time.Now()
 	ctx, cancel := context.WithTimeout(s.client.Ctx(), defaultRequestTimeout)
-	leaseResp, err := lessor.Grant(ctx, s.opts.leaseSec)
+	leaseResp, err := s.lessor.Grant(ctx, s.opts.leaseSec)
 	cancel()
 
 	if cost := time.Now().Sub(start); cost > defaultSlowRequestTime {
@@ -110,6 +107,9 @@ func (s *store) campaignLeader(frag, leaderPeerID uint64, becomeLeader, becomeFo
 	if err != nil {
 		return err
 	}
+
+	s.addLessor(frag, leaseResp.ID)
+	defer s.closeLessor(frag)
 
 	// The leader key must not exist, so the CreateRevision is 0.
 	resp, err := s.txn().
@@ -125,7 +125,7 @@ func (s *store) campaignLeader(frag, leaderPeerID uint64, becomeLeader, becomeFo
 		return errors.New("campaign leader failed, other server may campaign ok")
 	}
 
-	ch, err := lessor.KeepAlive(s.client.Ctx(), clientv3.LeaseID(leaseResp.ID))
+	ch, err := s.lessor.KeepAlive(s.client.Ctx(), clientv3.LeaseID(leaseResp.ID))
 	if err != nil {
 		log.Errorf("etcd KeepAlive failed with %+v", err)
 		return err
@@ -250,17 +250,17 @@ func (s *store) closeLessor(frag uint64) {
 	s.Lock()
 	defer s.Unlock()
 
-	if lessor, ok := s.leasors[frag]; ok {
-		lessor.Close()
+	if id, ok := s.leasors[frag]; ok {
+		s.lessor.Revoke(s.client.Ctx(), id)
 		delete(s.leasors, frag)
 	}
 }
 
-func (s *store) addLessor(frag uint64, lessor clientv3.Lease) {
+func (s *store) addLessor(frag uint64, id clientv3.LeaseID) {
 	s.Lock()
 	defer s.Unlock()
 
-	s.leasors[frag] = lessor
+	s.leasors[frag] = id
 }
 
 func (s *store) getValue(key string, opts ...clientv3.OpOption) ([]byte, error) {

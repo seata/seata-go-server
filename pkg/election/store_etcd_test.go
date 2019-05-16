@@ -22,7 +22,8 @@ func TestAddExpectLeader(t *testing.T) {
 	s := &store{
 		opts:          opts,
 		client:        opts.client,
-		leasors:       make(map[uint64]clientv3.Lease),
+		lessor:        clientv3.NewLease(opts.client),
+		leasors:       make(map[uint64]clientv3.LeaseID),
 		watcheCancels: make(map[uint64]context.CancelFunc),
 		watchers:      make(map[uint64]clientv3.Watcher),
 	}

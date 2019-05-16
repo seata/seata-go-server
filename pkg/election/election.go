@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
-
 	"github.com/fagongzi/log"
 )
 
@@ -48,7 +47,8 @@ func NewElector(opts ...Option) (Elector, error) {
 	e.store = &store{
 		opts:          e.opts,
 		client:        e.opts.client,
-		leasors:       make(map[uint64]clientv3.Lease),
+		lessor:        clientv3.NewLease(e.opts.client),
+		leasors:       make(map[uint64]clientv3.LeaseID),
 		watcheCancels: make(map[uint64]context.CancelFunc),
 		watchers:      make(map[uint64]clientv3.Watcher),
 	}
