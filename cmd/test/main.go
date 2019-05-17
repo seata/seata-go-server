@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/fagongzi/log"
@@ -23,6 +24,7 @@ func (h *handler) OnBranchRollback(xid meta.FragmentXID, bid uint64) {
 }
 
 func main() {
+	op := uint64(0)
 	flag.Parse()
 	log.InitLog()
 
@@ -70,7 +72,7 @@ func main() {
 						log.Fatalf("[%s] create global %+v", fmt.Sprintf("c-%d", idx), rsp.Msg)
 					}
 					xids = append(xids, rsp.XID)
-					b.RegisterBranch(rsp.XID, res, meta.AT, "", "")
+					b.RegisterBranch(rsp.XID, res, meta.AT, fmt.Sprintf("t1:%d", atomic.AddUint64(&op, 1)), "")
 				}
 
 				rsps, err = c.CommitBatch(b)

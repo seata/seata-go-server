@@ -17,5 +17,5 @@ This document defines the roadmap for TaaS.
 ### Storage
 - [ ] Tikv
 - [ ] S3 Storage
-- [ ] Redis (Development or Test environment)
+- [x] Redis (Development or Test environment)
 

@@ -90,6 +90,10 @@ func (s *Storage) Remove(fragmentID uint64, transaction *meta.GlobalTransaction)
 // Load get the all global transcations from elasticell
 func (s *Storage) Load(fragmentID uint64, query meta.Query, applyFunc func(*meta.GlobalTransaction) error) error {
 	key := gCellKey(fragmentID)
+	if !s.opts.isCell {
+		return s.loadFromRedis(key, query, applyFunc)
+	}
+
 	return s.doWithRetry(func(conn redis.Conn) error {
 		count := uint64(0)
 		start := []byte("")
@@ -138,7 +142,6 @@ func (s *Storage) Load(fragmentID uint64, query meta.Query, applyFunc func(*meta
 
 		return nil
 	})
-
 }
 
 // PutManual put manual action into storage
@@ -186,6 +189,10 @@ func (s *Storage) Manual(fragmentID uint64, applyFunc func(*meta.Manual) error) 
 
 // Lockable returns the key is lockable on resource
 func (s *Storage) Lockable(resource string, gid uint64, keys ...meta.LockKey) (bool, string, error) {
+	if !s.opts.isCell {
+		return s.lockableFromRedis(resource, gid, keys...)
+	}
+
 	if len(keys) == 0 {
 		return true, "", nil
 	}
@@ -215,6 +222,10 @@ func (s *Storage) Lockable(resource string, gid uint64, keys ...meta.LockKey) (b
 
 // Lock get the lock on the resource
 func (s *Storage) Lock(resource string, gid uint64, keys ...meta.LockKey) (bool, string, error) {
+	if !s.opts.isCell {
+		return s.lockFromRedis(resource, gid, keys...)
+	}
+
 	if len(keys) == 0 {
 		return true, "", nil
 	}
@@ -245,6 +256,10 @@ func (s *Storage) Lock(resource string, gid uint64, keys ...meta.LockKey) (bool,
 
 // Unlock release the lock on the resource
 func (s *Storage) Unlock(resource string, keys ...meta.LockKey) error {
+	if !s.opts.isCell {
+		return s.unlockFromRedis(resource, keys...)
+	}
+
 	if len(keys) == 0 {
 		return nil
 	}

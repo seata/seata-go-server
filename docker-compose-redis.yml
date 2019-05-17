@@ -33,26 +33,26 @@ services:
     ports:
       - "3000:3000"
 
-  cell:
-    image: deepfabric/quickstart
+  redis:
+    image: redis
     ports:
       - "6379:6379"
 
   seata1:
     image: infinivision/seata
     depends_on: 
-      - cell
+      - redis
       - pushgateway
     ports:
       - "8080:8080"
     command:
-      - --wait=10
+      - --wait=1
       - --id=1
       - --init=128
       - --fragment-worker=32
       - --log-level=info
       - --addr=seata1:8080
-      - --addr-store=cell://cell:6379?maxActive=100&maxIdle=50&idleTimeout=120
+      - --addr-store=redis://redis:6379?maxActive=100&maxIdle=50&idleTimeout=120
       - --addr-peer=seata1:9090
       - --prophet-addr=seata1:9529
       - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
@@ -69,18 +69,18 @@ services:
   seata2:
     image: infinivision/seata
     depends_on: 
-      - cell
+      - redis
       - pushgateway
     ports:
       - "8081:8080"
     command:
-      - --wait=10
+      - --wait=1
       - --id=2
       - --init=128
       - --fragment-worker=32
       - --log-level=info
       - --addr=seata2:8080
-      - --addr-store=cell://cell:6379?maxActive=100&maxIdle=50&idleTimeout=120
+      - --addr-store=redis://redis:6379?maxActive=100&maxIdle=50&idleTimeout=120
       - --addr-peer=seata2:9090
       - --prophet-addr=seata2:9529
       - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
@@ -97,18 +97,18 @@ services:
   seata3:
     image: infinivision/seata
     depends_on: 
-      - cell
+      - redis
       - pushgateway
     ports:
       - "8082:8080"
     command:
-      - --wait=10
+      - --wait=1
       - --id=3
       - --init=128
       - --fragment-worker=32
       - --log-level=info
       - --addr=seata3:8080
-      - --addr-store=cell://cell:6379?maxActive=100&maxIdle=50&idleTimeout=120
+      - --addr-store=redis://redis:6379?maxActive=100&maxIdle=50&idleTimeout=120
       - --addr-peer=seata3:9090
       - --prophet-addr=seata3:9529
       - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
@@ -125,7 +125,7 @@ services:
   seata-proxy:
     image: infinivision/seata-proxy
     depends_on: 
-      - cell
+      - redis
       - seata1
       - seata2
       - seata3
@@ -135,11 +135,11 @@ services:
       - --log-level=info
       - --addr=:8080
       - --addr-prophet=seata1:9529,seata2:9529,seata3:9529
-      
+
   seata-dashboard:
     image: infinivision/seata-dashboard
     depends_on: 
-      - cell
+      - redis
       - seata1
       - seata2
       - seata3

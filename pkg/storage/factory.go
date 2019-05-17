@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	protocolCell = "cell"
+	protocolCell  = "cell"
+	protocolRedis = "redis"
 )
 
 const (
@@ -23,7 +24,9 @@ func CreateStorage(protocolAddr string) (Storage, error) {
 
 	switch u.Scheme {
 	case protocolCell:
-		return createElasticellStorage(u)
+		return createRedisLikeStorage(u, true)
+	case protocolRedis:
+		return createRedisLikeStorage(u, false)
 	}
 
 	log.Fatalf("the schema %s is not support", u.Scheme)

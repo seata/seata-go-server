@@ -19,8 +19,8 @@ const (
 	paramWriteTimeout = "writeTimeout"
 )
 
-// example: cell://ip:port?retry=3&maxActive=100&maxIdle=10&idleTimeout=30&dailTimeout=10&readTimeout=30&writeTimeout=10
-func createElasticellStorage(u *url.URL) (Storage, error) {
+// example: cell[|redis]://ip:port?retry=3&maxActive=100&maxIdle=10&idleTimeout=30&dailTimeout=10&readTimeout=30&writeTimeout=10
+func createRedisLikeStorage(u *url.URL, isCell bool) (Storage, error) {
 	var cellOpts []cedis.Option
 
 	var proxies []string
@@ -66,5 +66,6 @@ func createElasticellStorage(u *url.URL) (Storage, error) {
 		opts = append(opts, cell.WithRetry(format.MustParseStrInt(retry)))
 	}
 
+	opts = append(opts, cell.WithElasticell(isCell))
 	return cell.NewStorage(cedis.NewCedis(cellOpts...), opts...), nil
 }
