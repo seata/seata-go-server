@@ -2,12 +2,20 @@
 This document defines the roadmap for TaaS.
 
 ## Features
-- [ ] etcd discovery
-- [ ] redis discovery
-- [ ] consul discovery
-- [ ] nacos discovery
-- [ ] eureka discovery
-- [ ] zookeeper discovery
-- [ ] sofa discovery
+### Service Discovery
+- [ ] Etcd
+- [ ] Redis
+- [ ] Consul
+- [ ] Nacos
+- [ ] Eureka
+- [ ] Zookeeper
+- [ ] Sofa
 
+### kubernetes
+- [ ] K8s operator
+
+### Storage
+- [ ] Tikv
+- [ ] S3 Storage
+- [ ] Redis (Development or Test environment)
 
