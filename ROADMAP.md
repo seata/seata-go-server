@@ -3,7 +3,7 @@ This document defines the roadmap for TaaS.
 
 ## Features
 ### Service Discovery
-- [ ] Etcd
+- [x] Etcd
 - [ ] Redis
 - [ ] Consul
 - [ ] Nacos

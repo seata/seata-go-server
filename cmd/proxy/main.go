@@ -17,10 +17,11 @@ import (
 )
 
 var (
-	addr        = flag.String("addr", "127.0.0.1:7070", "Addr: seata server")
-	addrProphet = flag.String("addr-prophet", "127.0.0.1:6379", "Addr: cell proxy address")
+	addr        = flag.String("addr", "127.0.0.1:8091", "Addr: seata server")
+	addrProphet = flag.String("addr-prophet", "127.0.0.1:2379", "Addr: prophet address")
 	addrPPROF   = flag.String("addr-pprof", "", "Addr: pprof addr")
 	cpu         = flag.Int("cpu", 0, "Limit: schedule threads count")
+	registry    = flag.String("registry", "", "etcd://127.0.0.1:2379")
 	version     = flag.Bool("version", false, "Show version info")
 )
 
