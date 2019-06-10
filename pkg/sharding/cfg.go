@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/core"
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/core"
+	"seata.io/server/pkg/meta"
 )
 
 // Cfg raftstore configuration

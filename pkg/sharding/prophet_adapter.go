@@ -6,9 +6,9 @@ import (
 	"github.com/fagongzi/log"
 	"github.com/fagongzi/util/json"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/meta"
-	"github.com/infinivision/taas/pkg/metrics"
-	"github.com/infinivision/taas/pkg/util"
+	"seata.io/server/pkg/meta"
+	"seata.io/server/pkg/metrics"
+	"seata.io/server/pkg/util"
 )
 
 // ProphetAdapter adapter prophet

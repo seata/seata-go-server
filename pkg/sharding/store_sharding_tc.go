@@ -3,7 +3,7 @@ package sharding
 import (
 	"fmt"
 
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/meta"
 )
 
 // CurrentLeader returns current leader

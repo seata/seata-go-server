@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/fagongzi/log"
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/meta"
 )
 
 func (s *Store) runPRTask(ctx context.Context, id uint64) {

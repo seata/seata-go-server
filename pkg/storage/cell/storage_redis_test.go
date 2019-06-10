@@ -3,8 +3,8 @@ package cell
 import (
 	"testing"
 
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/cedis"
+	"seata.io/server/pkg/meta"
 )
 
 func TestLockAndUnlockFromRedis(t *testing.T) {

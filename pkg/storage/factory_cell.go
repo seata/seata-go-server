@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/fagongzi/util/format"
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/storage/cell"
+	"seata.io/server/pkg/cedis"
+	"seata.io/server/pkg/storage/cell"
 )
 
 const (

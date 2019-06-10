@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/fagongzi/util/format"
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/meta"
 	"github.com/labstack/echo"
 )
 

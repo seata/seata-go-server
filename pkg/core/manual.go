@@ -1,8 +1,8 @@
 package core
 
 import (
-	"github.com/infinivision/taas/pkg/meta"
-	"github.com/infinivision/taas/pkg/storage"
+	"seata.io/server/pkg/meta"
+	"seata.io/server/pkg/storage"
 )
 
 // ManualAPI manual api

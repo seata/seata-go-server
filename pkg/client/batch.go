@@ -3,7 +3,7 @@ package client
 import (
 	"time"
 
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/meta"
 )
 
 // Batch batch operation

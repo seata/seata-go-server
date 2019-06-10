@@ -5,8 +5,8 @@ import (
 
 	"github.com/fagongzi/util/json"
 	"github.com/garyburd/redigo/redis"
-	"github.com/infinivision/taas/pkg/cedis"
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/cedis"
+	"seata.io/server/pkg/meta"
 )
 
 // Storage storage using cell

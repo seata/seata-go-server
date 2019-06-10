@@ -11,8 +11,8 @@ import (
 	"github.com/fagongzi/goetty"
 	"github.com/fagongzi/log"
 	"github.com/fagongzi/util/task"
-	"github.com/infinivision/taas/pkg/meta"
-	"github.com/infinivision/taas/pkg/util"
+	"seata.io/server/pkg/meta"
+	"seata.io/server/pkg/util"
 )
 
 var (

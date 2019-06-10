@@ -3,9 +3,9 @@ package core
 import (
 	"time"
 
-	"github.com/infinivision/taas/pkg/election"
-	"github.com/infinivision/taas/pkg/id"
-	"github.com/infinivision/taas/pkg/storage"
+	"seata.io/server/pkg/election"
+	"seata.io/server/pkg/id"
+	"seata.io/server/pkg/storage"
 )
 
 // Option option

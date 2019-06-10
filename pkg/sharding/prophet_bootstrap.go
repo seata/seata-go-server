@@ -4,9 +4,9 @@ import (
 	"github.com/fagongzi/goetty"
 	"github.com/fagongzi/log"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/core"
-	"github.com/infinivision/taas/pkg/election"
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/core"
+	"seata.io/server/pkg/election"
+	"seata.io/server/pkg/meta"
 )
 
 func (s *Store) startProphet() {

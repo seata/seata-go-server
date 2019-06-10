@@ -10,19 +10,19 @@ import (
 	"syscall"
 
 	"github.com/fagongzi/log"
-	"github.com/infinivision/taas/pkg/core"
-	"github.com/infinivision/taas/pkg/dashboard"
-	"github.com/infinivision/taas/pkg/storage"
-	"github.com/infinivision/taas/pkg/util"
+	"seata.io/server/pkg/core"
+	"seata.io/server/pkg/dashboard"
+	"seata.io/server/pkg/storage"
+	"seata.io/server/pkg/util"
 )
 
 var (
-	addr        = flag.String("addr", "127.0.0.1:8080", "Addr: api http server")
+	addr        = flag.String("addr", "127.0.0.1:8080", "Addr: seata api http server")
 	addrStorage = flag.String("addr-store", "cell://127.0.0.1:6379", "Addr: meta storage addresss with protocol")
-	addrProphet = flag.String("addr-prophet", "127.0.0.1:6379", "Addr: cell proxy address")
+	addrProphet = flag.String("addr-prophet", "127.0.0.1:2379", "Addr: prophet address")
 	cpu         = flag.Int("cpu", 0, "Limit: schedule threads count")
-	ui          = flag.String("ui", "/app/taas/ui", "The Taas dashboard ui dist dir.")
-	uiPrefix    = flag.String("ui-prefix", "/ui", "The gateway ui prefix path.")
+	ui          = flag.String("ui", "/app/seata/ui", "The seata dashboard ui dist dir.")
+	uiPrefix    = flag.String("ui-prefix", "/ui", "The dashboard ui prefix path.")
 	version     = flag.Bool("version", false, "Show version info")
 )
 

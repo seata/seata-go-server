@@ -87,7 +87,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(taas_seata_global_active_total)",
+                            "expr": "sum(seata_server_global_active_total)",
                             "intervalFactor": 2,
                             "refId": "A",
                             "step": 2
@@ -163,7 +163,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(rate(taas_seata_action_global_total{action=\"new\"}[1m])) by (status)",
+                            "expr": "sum(rate(seata_server_action_global_total{action=\"new\"}[1m])) by (status)",
                             "intervalFactor": 2,
                             "legendFormat": "{{status}}",
                             "refId": "A",
@@ -240,7 +240,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(rate(taas_seata_action_global_total{action=\"commit\"}[1m])) by (status)",
+                            "expr": "sum(rate(seata_server_action_global_total{action=\"commit\"}[1m])) by (status)",
                             "intervalFactor": 2,
                             "legendFormat": "{{status}}",
                             "refId": "A",
@@ -317,7 +317,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(rate(taas_seata_action_global_total{action=\"rollback\"}[1m])) by (status)",
+                            "expr": "sum(rate(seata_server_action_global_total{action=\"rollback\"}[1m])) by (status)",
                             "intervalFactor": 2,
                             "legendFormat": "{{status}}",
                             "refId": "A",
@@ -394,7 +394,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "histogram_quantile(0.99, sum(rate(taas_seata_global_duration_seconds_bucket[1m])) by (le))",
+                            "expr": "histogram_quantile(0.99, sum(rate(seata_server_global_duration_seconds_bucket[1m])) by (le))",
                             "intervalFactor": 2,
                             "legendFormat": "",
                             "refId": "A",
@@ -471,7 +471,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "histogram_quantile(0.9999, sum(rate(taas_seata_global_duration_seconds_bucket[1m])) by (le))",
+                            "expr": "histogram_quantile(0.9999, sum(rate(seata_server_global_duration_seconds_bucket[1m])) by (le))",
                             "intervalFactor": 2,
                             "refId": "A",
                             "step": 4
@@ -547,7 +547,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "histogram_quantile(0.50, sum(rate(taas_seata_global_duration_seconds_bucket[1m])) by (le))",
+                            "expr": "histogram_quantile(0.50, sum(rate(seata_server_global_duration_seconds_bucket[1m])) by (le))",
                             "intervalFactor": 2,
                             "refId": "A",
                             "step": 4
@@ -635,7 +635,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(rate(taas_seata_action_branch_total{action=\"new\"}[1m])) by (status)",
+                            "expr": "sum(rate(seata_server_action_branch_total{action=\"new\"}[1m])) by (status)",
                             "intervalFactor": 2,
                             "legendFormat": "{{status}}",
                             "refId": "A",
@@ -712,7 +712,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(rate(taas_seata_action_branch_total{action=\"report\"}[1m])) by (status)",
+                            "expr": "sum(rate(seata_server_action_branch_total{action=\"report\"}[1m])) by (status)",
                             "intervalFactor": 2,
                             "legendFormat": "{{status}}",
                             "refId": "A",
@@ -789,7 +789,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(rate(taas_seata_action_branch_total{action=\"ack\"}[1m])) by (status)",
+                            "expr": "sum(rate(seata_server_action_branch_total{action=\"ack\"}[1m])) by (status)",
                             "intervalFactor": 2,
                             "legendFormat": "{{status}}",
                             "refId": "A",
@@ -866,7 +866,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "histogram_quantile(0.99, sum(rate(taas_seata_branch_duration_seconds_bucket[1m])) by (le, phase))",
+                            "expr": "histogram_quantile(0.99, sum(rate(seata_server_branch_duration_seconds_bucket[1m])) by (le, phase))",
                             "intervalFactor": 2,
                             "legendFormat": "{{phase}}",
                             "refId": "A",
@@ -943,7 +943,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "histogram_quantile(0.9999, sum(rate(taas_seata_branch_duration_seconds_bucket[1m])) by (le, phase))",
+                            "expr": "histogram_quantile(0.9999, sum(rate(seata_server_branch_duration_seconds_bucket[1m])) by (le, phase))",
                             "intervalFactor": 2,
                             "legendFormat": "{{phase}}",
                             "refId": "A",
@@ -1020,7 +1020,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "histogram_quantile(0.50, sum(rate(taas_seata_branch_duration_seconds_bucket[1m])) by (le, phase))",
+                            "expr": "histogram_quantile(0.50, sum(rate(seata_server_branch_duration_seconds_bucket[1m])) by (le, phase))",
                             "intervalFactor": 2,
                             "legendFormat": "{{phase}}",
                             "refId": "A",

@@ -39,7 +39,7 @@ services:
       - "6379:6379"
 
   seata1:
-    image: infinivision/seata
+    image: seata.io/seata-server
     depends_on: 
       - cell
       - pushgateway
@@ -67,7 +67,7 @@ services:
       - --metrics-push-interval=5
 
   seata2:
-    image: infinivision/seata
+    image: seata.io/seata-server
     depends_on: 
       - cell
       - pushgateway
@@ -95,7 +95,7 @@ services:
       - --metrics-push-interval=5
 
   seata3:
-    image: infinivision/seata
+    image: seata.io/seata-server
     depends_on: 
       - cell
       - pushgateway
@@ -123,7 +123,7 @@ services:
       - --metrics-push-interval=5
 
   seata-proxy:
-    image: infinivision/seata-proxy
+    image: seata.io/seata-proxy
     depends_on: 
       - cell
       - seata1
@@ -137,7 +137,7 @@ services:
       - --addr-prophet=seata1:9529,seata2:9529,seata3:9529
       
   seata-dashboard:
-    image: infinivision/seata-dashboard
+    image: seata.io/seata-dashboard
     depends_on: 
       - cell
       - seata1

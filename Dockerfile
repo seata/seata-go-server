@@ -3,15 +3,15 @@ FROM golang:1.12.1 as builder
 ARG RELEASE=dev
 ARG TARGET=seata
 
-COPY . /go/src/github.com/infinivision/taas
-WORKDIR /go/src/github.com/infinivision/taas
+COPY . /go/src/seata.io/server
+WORKDIR /go/src/seata.io/server
 
 RUN make ${TARGET} 'release_version=${RELEASE}'
 
 FROM alpine:latest
 
-COPY --from=builder /go/src/github.com/infinivision/taas/dist/${TARGET} /usr/local/bin/${TARGET}
-COPY dist/ui/dist /app/taas/ui
+COPY --from=builder /go/src/seata.io/server/dist/${TARGET} /usr/local/bin/${TARGET}
+COPY dist/ui/dist /app/seata/ui
 
 RUN mkdir -p /var/${TARGET}/
 RUN mkdir -p /var/lib/${TARGET}/

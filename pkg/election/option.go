@@ -22,11 +22,11 @@ func (opts *options) adjust() error {
 	}
 
 	if opts.leaderPath == "" {
-		opts.leaderPath = "/tmp/taas/election"
+		opts.leaderPath = "/tmp/seata/election"
 	}
 
 	if opts.lockPath == "" {
-		opts.lockPath = "/tmp/taas/lock/election"
+		opts.lockPath = "/tmp/seata/lock/election"
 	}
 
 	if opts.leaseSec == 0 {

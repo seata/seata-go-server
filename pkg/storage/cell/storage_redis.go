@@ -6,7 +6,7 @@ import (
 	"github.com/fagongzi/util/format"
 	"github.com/fagongzi/util/json"
 	"github.com/garyburd/redigo/redis"
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/meta"
 )
 
 func (s *Storage) loadFromRedis(key string, query meta.Query, applyFunc func(*meta.GlobalTransaction) error) error {

@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/meta"
 )
 
 // Storage meta storage

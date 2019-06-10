@@ -12,11 +12,11 @@ import (
 	"github.com/fagongzi/log"
 	"github.com/fagongzi/util/json"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/meta"
 )
 
 var (
-	basePath      = "/taas"
+	basePath      = "/seata"
 	fragmentsPath = fmt.Sprintf("%s/framents", basePath)
 	storesPath    = fmt.Sprintf("%s/stores", basePath)
 

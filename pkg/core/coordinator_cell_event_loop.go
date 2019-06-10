@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/fagongzi/log"
-	"github.com/infinivision/taas/pkg/meta"
-	"github.com/infinivision/taas/pkg/util"
+	"seata.io/server/pkg/meta"
+	"seata.io/server/pkg/util"
 )
 
 const (

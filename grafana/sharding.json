@@ -87,7 +87,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(taas_sharding_fragment_total)",
+                            "expr": "sum(seata_sharding_fragment_total)",
                             "intervalFactor": 2,
                             "refId": "A",
                             "step": 2
@@ -163,7 +163,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum(taas_sharding_fragment_total{role='leader'}) by (exported_instance)",
+                            "expr": "sum(seata_sharding_fragment_total{role='leader'}) by (exported_instance)",
                             "intervalFactor": 2,
                             "refId": "A",
                             "step": 2

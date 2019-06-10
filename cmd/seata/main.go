@@ -15,13 +15,13 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/fagongzi/log"
 	"github.com/infinivision/prophet"
-	"github.com/infinivision/taas/pkg/core"
-	"github.com/infinivision/taas/pkg/election"
-	"github.com/infinivision/taas/pkg/id"
-	"github.com/infinivision/taas/pkg/metrics"
-	"github.com/infinivision/taas/pkg/sharding"
-	"github.com/infinivision/taas/pkg/storage"
-	"github.com/infinivision/taas/pkg/util"
+	"seata.io/server/pkg/core"
+	"seata.io/server/pkg/election"
+	"seata.io/server/pkg/id"
+	"seata.io/server/pkg/metrics"
+	"seata.io/server/pkg/sharding"
+	"seata.io/server/pkg/storage"
+	"seata.io/server/pkg/util"
 )
 
 var (
@@ -31,7 +31,7 @@ var (
 	addrStorage                        = flag.String("addr-store", "cell://127.0.0.1:6379", "Addr: meta storage addresss with protocol")
 	addrPeer                           = flag.String("addr-peer", "127.0.0.1:8081", "Addr: sharding fragment addr")
 	addrPPROF                          = flag.String("addr-pprof", "", "Addr: pprof addr")
-	dataPath                           = flag.String("data", "/tmp/taas", "Taas local data path")
+	dataPath                           = flag.String("data", "/tmp/seata", "Seata local data path")
 	zone                               = flag.String("zone", "zone-1", "Zone label")
 	rack                               = flag.String("rack", "rack-1", "Rack label")
 	cpu                                = flag.Int("cpu", 0, "Limit: schedule threads count")
@@ -41,8 +41,8 @@ var (
 	prWorkerCount                      = flag.Int("fragment-worker", 128, "fragment worker count")
 	ackTimeout                         = flag.Int("timeout-ack", 30, "Limit: RM ack timeout seconds")
 	commitIfAllBranchSucceedInPhaseOne = flag.Bool("commit-on-timeout", false, "Enable: Commit the global transaction if all branch transaction was succeed on timeout")
-	electionLockPath                   = flag.String("election-lock-path", "/tmp/taas/lock/election", "election lock path")
-	electionLeaderPath                 = flag.String("election-leader-path", "/tmp/taas/election", "election leader path")
+	electionLockPath                   = flag.String("election-lock-path", "/tmp/seata/lock/election", "election lock path")
+	electionLeaderPath                 = flag.String("election-leader-path", "/tmp/seata/election", "election leader path")
 	electionLease                      = flag.Int64("election-lease", 5, "election leader lease seconds")
 	storeHBIntervalSec                 = flag.Int("heartbeat-store", 30, "HB(sec): store heartbeat")
 	fragHBIntervalSec                  = flag.Int("heartbeat-frag", 5, "HB(sec): fragment heartbeat")

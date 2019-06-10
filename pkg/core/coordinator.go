@@ -1,10 +1,10 @@
 package core
 
 import (
-	"github.com/infinivision/taas/pkg/meta"
+	"seata.io/server/pkg/meta"
 )
 
-// TransactionCoordinator Taas transaction manager
+// TransactionCoordinator Seata transaction manager
 type TransactionCoordinator interface {
 	// Stop stop tc
 	Stop()

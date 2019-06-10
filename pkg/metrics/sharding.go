@@ -8,7 +8,7 @@ var (
 	// FragmentGauge fragment count
 	FragmentGauge = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace: "taas",
+			Namespace: "seata",
 			Subsystem: "sharding",
 			Name:      "fragment_total",
 			Help:      "Total number of Fragment.",

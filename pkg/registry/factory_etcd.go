@@ -6,7 +6,7 @@ import (
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/fagongzi/util/format"
-	"github.com/infinivision/taas/pkg/registry/etcd"
+	"seata.io/server/pkg/registry/etcd"
 )
 
 const (

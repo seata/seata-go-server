@@ -1,5 +1,5 @@
 # Roadmap
-This document defines the roadmap for TaaS.
+This document defines the roadmap for Seata-Server.
 
 ## Features
 ### Service Discovery

@@ -9,8 +9,8 @@ VERSION_PATH    = $(shell echo $(ROOT_DIR) | sed -e "s;${GOPATH}/src/;;g")pkg/ut
 LD_GIT_COMMIT   = -X '$(VERSION_PATH).GitCommit=`git rev-parse --short HEAD`'
 LD_BUILD_TIME   = -X '$(VERSION_PATH).BuildTime=`date +%FT%T%z`'
 LD_GO_VERSION   = -X '$(VERSION_PATH).GoVersion=`go version`'
-LD_TAAS_VERSION = -X '$(VERSION_PATH).Version=$(RELEASE_VERSION)'
-LD_FLAGS        = -ldflags "$(LD_GIT_COMMIT) $(LD_BUILD_TIME) $(LD_GO_VERSION) $(LD_TAAS_VERSION) -w -s"
+LD_SEATA_VERSION = -X '$(VERSION_PATH).Version=$(RELEASE_VERSION)'
+LD_FLAGS        = -ldflags "$(LD_GIT_COMMIT) $(LD_BUILD_TIME) $(LD_GO_VERSION) $(LD_SEATA_VERSION) -w -s"
 
 GOOS 		= linux
 CGO_ENABLED = 0
@@ -39,31 +39,31 @@ release: dist_dir proxy seata dashboard;
 docker: dist_dir ui;
 	@echo ========== current docker tag is: $(RELEASE_VERSION) ==========
 	sed 's/#TARGET#/seata/g' Dockerfile > Dockerfile.bak
-	docker build --build-arg RELEASE=$(RELEASE_VERSION) --build-arg TARGET=seata -t infinivision/seata:$(RELEASE_VERSION) -f Dockerfile.bak .
+	docker build --build-arg RELEASE=$(RELEASE_VERSION) --build-arg TARGET=seata-server -t seata.io/seata-server:$(RELEASE_VERSION) -f Dockerfile.bak .
 	sed 's/#TARGET#/proxy/g' Dockerfile > Dockerfile.bak
-	docker build --build-arg RELEASE=$(RELEASE_VERSION) --build-arg TARGET=proxy -t infinivision/seata-proxy:$(RELEASE_VERSION) -f Dockerfile.bak .
+	docker build --build-arg RELEASE=$(RELEASE_VERSION) --build-arg TARGET=seata-proxy -t seata.io/seata-proxy:$(RELEASE_VERSION) -f Dockerfile.bak .
 	sed 's/#TARGET#/dashboard/g' Dockerfile > Dockerfile.bak
-	docker build --build-arg RELEASE=$(RELEASE_VERSION) --build-arg TARGET=dashboard -t infinivision/seata-dashboard:$(RELEASE_VERSION) -f Dockerfile.bak .
+	docker build --build-arg RELEASE=$(RELEASE_VERSION) --build-arg TARGET=seata-dashboard -t seata.io/seata-dashboard:$(RELEASE_VERSION) -f Dockerfile.bak .
 	rm -rf *.bak
 
-	docker tag infinivision/seata:$(RELEASE_VERSION) infinivision/seata
-	docker tag infinivision/seata-proxy:$(RELEASE_VERSION) infinivision/seata-proxy
-	docker tag infinivision/seata-dashboard:$(RELEASE_VERSION) infinivision/seata-dashboard
+	docker tag seata.io/seata-server:$(RELEASE_VERSION) seata.io/seata-server
+	docker tag seata.io/seata-proxy:$(RELEASE_VERSION) seata.io/seata-proxy
+	docker tag seata.io/seata-dashboard:$(RELEASE_VERSION) seata.io/seata-dashboard
 
 .PHONY: ui
 ui: dist_dir; $(info ======== compile ui:)
 	git clone https://github.com/infinivision/taas-ui.git $(DIST_DIR)ui
 
-.PHONY: proxy
-proxy: dist_dir; $(info ======== compiled proxy:)
+.PHONY: seata-proxy
+seata-proxy: dist_dir; $(info ======== compiled seata-proxy:)
 	env GO111MODULE=on CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) go build -mod=vendor -a -installsuffix cgo -o $(DIST_DIR)proxy $(LD_FLAGS) $(ROOT_DIR)cmd/proxy/*.go
 
-.PHONY: seata
-seata: dist_dir; $(info ======== compiled seata:)
+.PHONY: seata-server
+seata-server: dist_dir; $(info ======== compiled seata-server:)
 	env GO111MODULE=on CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) go build -mod=vendor -a -installsuffix cgo -o $(DIST_DIR)seata $(LD_FLAGS) $(ROOT_DIR)cmd/seata/*.go
 
-.PHONY: dashboard
-dashboard: dist_dir; $(info ======== compiled dashboard:)
+.PHONY: seata-dashboard
+seata-dashboard: dist_dir; $(info ======== compiled seata-dashboard:)
 	env GO111MODULE=on CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) go build -mod=vendor -a -installsuffix cgo -o $(DIST_DIR)dashboard $(LD_FLAGS) $(ROOT_DIR)cmd/dashboard/*.go
 
 .PHONY: dist_dir
