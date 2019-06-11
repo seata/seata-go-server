@@ -6,10 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"seata.io/server/pkg/util"
-
 	"github.com/fagongzi/log"
 	"seata.io/server/pkg/meta"
+	"seata.io/server/pkg/util"
 )
 
 // Transport transport
