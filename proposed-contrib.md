@@ -1,0 +1,4 @@
+There were one initial proposed contributions to the Seata-Go-Server project. They are listed here for posterity.
+
+## InfiniVision
+InfiniVision is a technology-driven enterprise service provider that leverages AI, cloud computing, blockchain, big data, and IoT edge computing technologies to help traditional enterprised benefit from cutting edge technologies. InfiniVision actively embraces open source culture, well-known face recognition solution [InsightFace](https://github.com/deepinsight/insightface), as well as distributed storage engine [Elasticell](https://github.com/deepfabric/elasticell) are all open source products of InfiniVision.

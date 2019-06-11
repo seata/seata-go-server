@@ -1,5 +1,5 @@
-# TaaS
-TaaS是一个兼容[Seata](https://github.com/seata/seata)（0.5版本以后）的分布式事务解决方案的高可用的服务端组件，使用Golang开发，由InfiniVision (http://infinivision.cn) 贡献给Seata开源社区。
+# Seata-Go-Server
+Seata-Go-Server是一个兼容[Seata](https://github.com/seata/seata)（0.5版本以后）的分布式事务解决方案的高可用的服务端组件，使用Golang开发。
 
 ## 特性
 - 高可用，容错
@@ -44,7 +44,5 @@ docker-compose up -d
 ### Seata UI 
 访问WEB UI `http://127.0.0.1:8084/ui/index.html`
 
-## 关于深见
-深见网络是一家技术驱动的企业级服务提供商，致力于利用人工智能、云计算、区块链、大数据，以及物联网边缘计算技术助力传统企业的数字化转型和升级。深见网络积极拥抱开源文化并将核心算法和架构开源，知名人脸识别软件[InsightFace](https://github.com/deepinsight/insightface)(曾多次获得大规模人脸识别挑战冠军)，以及分布式存储引擎[Elasticell](https://github.com/deepfabric/elasticell)等均是深见网络的开源产品。
-
-
+## History & Credit
+Seata-Go-Server 是由 [InfiniVision](./proposed-contrib.md#InfiniVision) 贡献给Seata开源社区。在 Seata 开源之前，InfiniVision 内部正在实现分布式事务的解决方案 TaaS (Transaction as a Service)。在 Seata 开源之后，InfiniVision 修改 TaaS 以兼容 Seata，并且捐赠给 Seata 开源社区。

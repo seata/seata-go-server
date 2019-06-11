@@ -1,5 +1,5 @@
-# TaaS
-TaaS is a highly available server-side component of a distributed transaction solution compatible with [Seata](https://github.com/seata/seata) (after version 0.5), developed using Golang, by [InfiniVision](http://infinivision.cn) contributed to the Seata open source community.
+# Seata-Go-Server
+Seata-Go-Server is a highly available server-side component of a distributed transaction solution compatible with [Seata](https://github.com/seata/seata) (after version 0.5), developed using Golang, by [InfiniVision](http://infinivision.cn) contributed to the Seata open source community.
 
 ## Feature
 - High availability, fault-tolerance
@@ -44,7 +44,5 @@ The service listens by default on port 8091, modifying the server address experi
 ### Seata UI
 Visit WEB UI `http://127.0.0.1:8084/ui/index.html`
 
-## About InfiniVision
-InfiniVision is a technology-driven enterprise service provider that leverages AI, cloud computing, blockchain, big data, and IoT edge computing technologies to help traditional enterprised benefit from cutting edge technologies. InfiniVision actively embraces open source culture, well-known face recognition solution [InsightFace](https://github.com/deepinsight/insightface), as well as distributed storage engine [Elasticell](https://github.com/deepfabric/elasticell) are all open source products of InfiniVision.
-
-
+## History & Credit
+Seata-Go-Server is contributed to the Seata open source community by [InfiniVision] (./proposed-contrib.md#InfiniVision). Prior to Seata's open source, InfiniVision was implementing a distributed transaction solution TaaS (Transaction as a Service). After Seata became open source, InfiniVision modified TaaS to be compatible with Seata and donated it to the Seata open source community.
