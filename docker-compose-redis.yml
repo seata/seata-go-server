@@ -39,7 +39,7 @@ services:
       - "6379:6379"
 
   seata1:
-    image: seata.io/seata-server
+    image: seata.io/seata-go-server
     depends_on: 
       - redis
       - pushgateway
@@ -67,7 +67,7 @@ services:
       - --metrics-push-interval=5
 
   seata2:
-    image: seata.io/seata-server
+    image: seata.io/seata-go-server
     depends_on: 
       - redis
       - pushgateway
@@ -95,7 +95,7 @@ services:
       - --metrics-push-interval=5
 
   seata3:
-    image: seata.io/seata-server
+    image: seata.io/seata-go-server
     depends_on: 
       - redis
       - pushgateway
@@ -123,7 +123,7 @@ services:
       - --metrics-push-interval=5
 
   seata-proxy:
-    image: seata.io/seata-proxy
+    image: seata.io/seata-go-proxy
     depends_on: 
       - redis
       - seata1
@@ -137,7 +137,7 @@ services:
       - --addr-prophet=seata1:9529,seata2:9529,seata3:9529
 
   seata-dashboard:
-    image: seata.io/seata-dashboard
+    image: seata.io/seata-go-dashboard
     depends_on: 
       - redis
       - seata1
