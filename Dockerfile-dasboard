@@ -8,7 +8,7 @@ RUN make seata-go-dashboard
 FROM alpine:latest
 
 COPY --from=builder /go/src/seata.io/server/dist/seata-go-dashboard /usr/local/bin/seata-go-dashboard
-COPY dist/ui/dist /app/seata/ui
+COPY --from=builder /go/src/seata.io/server/dist/ui/dist /app/seata/ui
 
 RUN mkdir -p /var/seata-go-dashboard/
 RUN mkdir -p /var/lib/seata-go-dashboard/
