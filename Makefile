@@ -60,7 +60,7 @@ seata-go-proxy: dist_dir; $(info ======== compiled seata-go-proxy:)
 
 .PHONY: seata-go-server
 seata-go-server: dist_dir; $(info ======== compiled seata-go-server:)
-	env GO111MODULE=on CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) go build -mod=vendor -a -installsuffix cgo -o $(DIST_DIR)seata-go-seata $(LD_FLAGS) $(ROOT_DIR)cmd/seata/*.go
+	env GO111MODULE=on CGO_ENABLED=$(CGO_ENABLED) GOOS=$(GOOS) go build -mod=vendor -a -installsuffix cgo -o $(DIST_DIR)seata-go-server $(LD_FLAGS) $(ROOT_DIR)cmd/seata/*.go
 
 .PHONY: seata-go-dashboard
 seata-go-dashboard: ui; $(info ======== compiled seata-go-dashboard:)
