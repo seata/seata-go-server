@@ -104,10 +104,10 @@ func (s *storage) createFragment(frag meta.Fragment, peer prophet.Peer) error {
 	return nil
 }
 
-func (s *storage) updateFragmentOnStore(frag meta.Fragment, peer prophet.Peer) error {
+func (s *storage) updateFragment(storeID uint64, frag meta.Fragment) error {
 	value := string(json.MustMarshal(&frag))
 	resp, err := s.etcdCli.Txn(s.etcdCli.Ctx()).
-		Then(clientv3.OpPut(getKey(frag.ID, getKey(peer.ContainerID, storesPath)), value)).
+		Then(clientv3.OpPut(getKey(frag.ID, getKey(storeID, storesPath)), value)).
 		Commit()
 	if err != nil {
 		return err

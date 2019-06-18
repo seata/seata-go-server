@@ -1,85 +1,8 @@
 package sharding
 
 import (
-	"fmt"
-
 	"seata.io/server/pkg/meta"
 )
-
-// CurrentLeader returns current leader
-func (s *Store) CurrentLeader(fid uint64) (uint64, uint64, error) {
-	pr := s.getFragment(fid, false)
-	if pr == nil {
-		return 0, 0, nil
-	}
-
-	leader, err := pr.tc.CurrentLeader()
-	if err != nil {
-		return 0, 0, err
-	}
-
-	var storeID uint64
-	for _, p := range pr.frag.Peers {
-		if p.ID == leader {
-			storeID = p.ContainerID
-			break
-		}
-	}
-
-	return leader, storeID, nil
-}
-
-// HandleRoutable handle routable message
-func (s *Store) HandleRoutable(ss *session, msg *meta.RouteableMessage) {
-	if msg.MsgType == meta.TypeHeartbeat {
-		s.handleRenewRMLease(ss.id, msg.RMSID)
-		return
-	} else if msg.MsgType == meta.TypeRegRM {
-		s.handleRegisterRM(ss, msg)
-		return
-	} else if msg.MsgType == meta.TypeRegClt {
-		s.handleRegisterTM(ss, msg)
-		return
-	}
-
-	pr := s.getFragment(msg.FID, true)
-	if pr == nil {
-		ss.cb(msg, nil, meta.ErrNotLeader)
-		return
-	}
-
-	switch msg.MsgType {
-	case meta.TypeGlobalBegin:
-		pr.handleGlobalBeginRequest(ss, msg)
-		break
-	case meta.TypeBranchRegister:
-		pr.handleBranchRegisterRequest(ss, msg)
-		break
-	case meta.TypeGlobalCommit:
-		pr.handleGlobalCommitRequest(ss, msg)
-		break
-	case meta.TypeGlobalRollback:
-		pr.handleGlobalRollbackRequest(ss, msg)
-		break
-	case meta.TypeBranchStatusReport:
-		pr.handleBranchReportRequest(ss, msg)
-		break
-	case meta.TypeGlobalStatus:
-		pr.handleGlobalStatusRequest(ss, msg)
-		break
-	case meta.TypeBranchCommitResult:
-		pr.handleBranchCommitResponse(ss, msg)
-		break
-	case meta.TypeBranchRollbackResult:
-		pr.handleBranchRollbackResponse(ss, msg)
-		break
-	case meta.TypeGlobalLockQuery:
-		pr.handleGlobalLockQueryRequest(ss, msg)
-		break
-	default:
-		ss.cb(msg, nil, fmt.Errorf("not support msg type %d", msg.MsgType))
-	}
-}
 
 func (pr *PeerReplicate) handleGlobalBeginRequest(s *session, msg *meta.RouteableMessage) {
 	req := msg.ReadOriginMsg().(*meta.GlobalBeginRequest)

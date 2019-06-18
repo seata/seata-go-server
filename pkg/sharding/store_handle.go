@@ -7,7 +7,7 @@ import (
 	"seata.io/server/pkg/meta"
 )
 
-func (s *Store) handleReplicate(data interface{}) interface{} {
+func (s *store) HandleShardingMsg(data interface{}) interface{} {
 	if msg, ok := data.(*meta.HBMsg); ok {
 		return s.handleHB(msg)
 	} else if msg, ok := data.(*meta.HBACKMsg); ok {
@@ -22,8 +22,8 @@ func (s *Store) handleReplicate(data interface{}) interface{} {
 	return nil
 }
 
-func (s *Store) handleHB(msg *meta.HBMsg) interface{} {
-	pr := s.getFragment(msg.Frag.ID, false)
+func (s *store) handleHB(msg *meta.HBMsg) interface{} {
+	pr := s.GetFragment(msg.Frag.ID, false)
 	if pr == nil {
 		pr, err := createPeerReplicate(s, msg.Frag)
 		if err != nil {
@@ -33,7 +33,7 @@ func (s *Store) handleHB(msg *meta.HBMsg) interface{} {
 			return nil
 		}
 
-		s.doAddPR(pr)
+		s.AddReplicate(pr)
 		return nil
 	}
 
@@ -50,7 +50,7 @@ func (s *Store) handleHB(msg *meta.HBMsg) interface{} {
 	update := pr.frag.Version < msg.Frag.Version
 	pr.frag = msg.Frag
 	if update {
-		pr.store.mustUpdateFragmentOnStore(pr.frag, pr.peer)
+		s.MustUpdateFragment(pr.peer.ContainerID, pr.frag)
 	}
 
 	return &meta.HBACKMsg{
@@ -60,8 +60,8 @@ func (s *Store) handleHB(msg *meta.HBMsg) interface{} {
 	}
 }
 
-func (s *Store) handleHBACK(msg *meta.HBACKMsg) interface{} {
-	pr := s.getFragment(msg.ID, true)
+func (s *store) handleHBACK(msg *meta.HBACKMsg) interface{} {
+	pr := s.GetFragment(msg.ID, true)
 	if pr == nil {
 		return nil
 	}
@@ -71,7 +71,7 @@ func (s *Store) handleHBACK(msg *meta.HBACKMsg) interface{} {
 
 	// stale peer, remove
 	if pr.frag.Version > msg.Version {
-		s.trans.sendMsg(msg.Peer.ContainerID, &meta.RemoveMsg{
+		s.trans.Send(msg.Peer.ContainerID, &meta.RemoveMsg{
 			ID: pr.frag.ID,
 		})
 		return nil
@@ -82,8 +82,8 @@ func (s *Store) handleHBACK(msg *meta.HBACKMsg) interface{} {
 	return nil
 }
 
-func (s *Store) handleRemovePR(msg *meta.RemoveMsg) interface{} {
-	pr := s.getFragment(msg.ID, false)
+func (s *store) handleRemovePR(msg *meta.RemoveMsg) interface{} {
+	pr := s.GetFragment(msg.ID, false)
 	if pr == nil {
 		return nil
 	}

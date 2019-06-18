@@ -25,10 +25,10 @@ type session struct {
 	id    string
 	msgQ  *task.Queue
 	conn  goetty.IOSession
-	store *Store
+	store Store
 }
 
-func newSession(conn goetty.IOSession, store *Store) *session {
+func newSession(conn goetty.IOSession, store Store) *session {
 	s := &session{
 		id:    fmt.Sprintf("%s-%s", conn.RemoteIP(), conn.ID().(string)),
 		conn:  conn,
@@ -49,7 +49,7 @@ func (s *session) cb(routeMsg *meta.RouteableMessage, rsp meta.Message, err erro
 			return
 		}
 
-		leader, storeID, err := s.store.CurrentLeader(routeMsg.FID)
+		leader, err := s.store.LeaderPeer(routeMsg.FID)
 		if err != nil {
 			log.Errorf("[frag-%d]: fetch current leader failed %+v",
 				routeMsg.FID,
@@ -59,8 +59,8 @@ func (s *session) cb(routeMsg *meta.RouteableMessage, rsp meta.Message, err erro
 
 		msg := meta.AcquireRetryNotLeaderMessage()
 		msg.FID = routeMsg.FID
-		msg.NewLeader = leader
-		msg.NewLeaderStore = storeID
+		msg.NewLeader = leader.ID
+		msg.NewLeaderStore = leader.ContainerID
 		msg.RetryData = routeMsg.Encode()
 		rsp = msg
 	}

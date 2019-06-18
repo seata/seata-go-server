@@ -13,7 +13,7 @@ import (
 
 // ProphetAdapter adapter prophet
 type ProphetAdapter struct {
-	store *Store
+	store Store
 }
 
 // NewResource return a new resource
@@ -28,7 +28,7 @@ func (pa *ProphetAdapter) NewContainer() prophet.Container {
 
 // FetchResourceHB fetch resource HB
 func (pa *ProphetAdapter) FetchResourceHB(id uint64) *prophet.ResourceHeartbeatReq {
-	pr := pa.store.getFragment(id, true)
+	pr := pa.store.GetFragment(id, true)
 	if pr == nil {
 		return nil
 	}
@@ -39,8 +39,7 @@ func (pa *ProphetAdapter) FetchResourceHB(id uint64) *prophet.ResourceHeartbeatR
 // FetchLeaderResources fetch all local leader resources
 func (pa *ProphetAdapter) FetchLeaderResources() []uint64 {
 	var values []uint64
-	pa.store.replicates.Range(func(key, value interface{}) bool {
-		pr := value.(*PeerReplicate)
+	pa.store.ForeachReplicate(func(pr *PeerReplicate) bool {
 		if pr.isLeader() {
 			values = append(values, pr.id)
 		}
@@ -60,30 +59,30 @@ func (pa *ProphetAdapter) FetchContainerHB() *prophet.ContainerHeartbeatReq {
 		return nil
 	}
 
-	st := pa.store.getFragmentStatus()
+	st := pa.store.FragmentsState()
 	req := new(prophet.ContainerHeartbeatReq)
-	req.Container = &ContainerAdapter{meta: pa.store.meta}
+	req.Container = &ContainerAdapter{meta: pa.store.Meta()}
 	req.StorageCapacity = stats.Total
 	req.StorageAvailable = stats.Available
 	req.StorageCapacity = 100
 	req.StorageAvailable = 100
-	req.LeaderCount = st.fragmentLeaderCount
-	req.ReplicaCount = st.fragmentCount
+	req.LeaderCount = st.FragmentLeaderCount
+	req.ReplicaCount = st.FragmentCount
 	req.Busy = false
 
-	metrics.FragmentGauge.WithLabelValues(metrics.RoleLeader).Set(float64(st.fragmentLeaderCount))
-	metrics.FragmentGauge.WithLabelValues(metrics.RoleFollower).Set(float64(st.fragmentCount - st.fragmentLeaderCount))
+	metrics.FragmentGauge.WithLabelValues(metrics.RoleLeader).Set(float64(st.FragmentLeaderCount))
+	metrics.FragmentGauge.WithLabelValues(metrics.RoleFollower).Set(float64(st.FragmentCount - st.FragmentLeaderCount))
 	return req
 }
 
 // ResourceHBInterval fetch resource HB interface
 func (pa *ProphetAdapter) ResourceHBInterval() time.Duration {
-	return pa.store.cfg.FragHBInterval
+	return pa.store.Cfg().FragHBInterval
 }
 
 // ContainerHBInterval fetch container HB interface
 func (pa *ProphetAdapter) ContainerHBInterval() time.Duration {
-	return pa.store.cfg.StoreHBInterval
+	return pa.store.Cfg().StoreHBInterval
 }
 
 // HBHandler HB hander
@@ -97,7 +96,7 @@ func (pa *ProphetAdapter) ChangeLeader(resourceID uint64, newLeader *prophet.Pee
 		resourceID,
 		newLeader)
 
-	pr := pa.store.getFragment(resourceID, true)
+	pr := pa.store.GetFragment(resourceID, true)
 	if pr != nil {
 		pr.tc.ChangeLeaderTo(newLeader.ID)
 	}
@@ -109,12 +108,12 @@ func (pa *ProphetAdapter) ChangePeer(resourceID uint64, peer *prophet.Peer, chan
 		log.Infof("[frag-%d]: schedule add peer %+v ",
 			resourceID,
 			peer)
-		pa.store.addPeer(resourceID, *peer)
+		pa.store.AddPeer(resourceID, *peer)
 	} else if changeType == prophet.RemovePeer {
 		log.Infof("[frag-%d]: schedule remove peer %+v ",
 			resourceID,
 			peer)
-		pa.store.removePeer(resourceID, *peer)
+		pa.store.RemovePeer(resourceID, *peer)
 	}
 }
 
@@ -229,23 +228,24 @@ func getResourceHB(pr *PeerReplicate) *prophet.ResourceHeartbeatReq {
 	req.Resource = &ResourceAdapter{meta: pr.frag}
 	req.LeaderPeer = &pr.peer
 	req.PendingPeers = pr.collectPendingPeers()
-	req.DownPeers = pr.collectDownPeers(pr.store.cfg.MaxPeerDownDuration)
+	req.DownPeers = pr.collectDownPeers(pr.store.Cfg().MaxPeerDownDuration)
 
 	return req
 }
 
-type fragmentStatus struct {
-	fragmentCount, fragmentLeaderCount uint64
+// FragmentsState fragments state
+type FragmentsState struct {
+	FragmentCount, FragmentLeaderCount uint64
 }
 
-func (s *Store) getFragmentStatus() fragmentStatus {
-	st := fragmentStatus{}
+func (s *store) FragmentsState() FragmentsState {
+	st := FragmentsState{}
 	s.replicates.Range(func(key, value interface{}) bool {
 		pr := value.(*PeerReplicate)
-		st.fragmentCount++
+		st.FragmentCount++
 
 		if pr.isLeader() {
-			st.fragmentLeaderCount++
+			st.FragmentLeaderCount++
 		}
 
 		return true

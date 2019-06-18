@@ -9,7 +9,7 @@ import (
 	"seata.io/server/pkg/meta"
 )
 
-func (s *Store) startProphet() {
+func (s *store) startProphet() {
 	log.Infof("start prophet")
 
 	s.pdStartedC = make(chan struct{})
@@ -26,7 +26,7 @@ func (s *Store) startProphet() {
 }
 
 // BecomeLeader this node is become prophet leader
-func (s *Store) BecomeLeader() {
+func (s *store) BecomeLeader() {
 	log.Infof("*********BecomeLeader prophet*********")
 	s.bootOnce.Do(func() {
 		s.doBootstrapCluster()
@@ -36,7 +36,7 @@ func (s *Store) BecomeLeader() {
 }
 
 // BecomeFollower this node is become prophet follower
-func (s *Store) BecomeFollower() {
+func (s *store) BecomeFollower() {
 	log.Infof("*********BecomeFollower prophet*********")
 	s.bootOnce.Do(func() {
 		s.doBootstrapCluster()
@@ -45,7 +45,7 @@ func (s *Store) BecomeFollower() {
 	log.Infof("*********BecomeFollower prophet complete*********")
 }
 
-func (s *Store) doBootstrapCluster() {
+func (s *store) doBootstrapCluster() {
 	data, err := s.storage.get(storeKey)
 	if err != nil {
 		log.Fatalf("load current store meta failed, errors:%+v", err)
@@ -75,7 +75,7 @@ func (s *Store) doBootstrapCluster() {
 		log.Fatal("save current store id failed, errors:%+v", err)
 	}
 
-	frag := s.createFristFragment()
+	frag := s.CreateFragment()
 	ok, err := s.pd.GetStore().PutBootstrapped(&ContainerAdapter{meta: s.meta},
 		&ResourceAdapter{meta: frag})
 	if err != nil {
@@ -95,7 +95,7 @@ func (s *Store) doBootstrapCluster() {
 	s.pd.GetRPC().TiggerContainerHeartbeat()
 }
 
-func (s *Store) createFristFragment() meta.Fragment {
+func (s *store) CreateFragment() meta.Fragment {
 	frag := meta.Fragment{
 		ID: s.allocID(),
 	}
@@ -108,7 +108,7 @@ func (s *Store) createFristFragment() meta.Fragment {
 	return frag
 }
 
-func (s *Store) createInitFragments() {
+func (s *store) createInitFragments() {
 	for i := 0; i < s.cfg.InitFragments-1; i++ {
 		frag := meta.Fragment{
 			ID: s.allocID(),
@@ -122,7 +122,7 @@ func (s *Store) createInitFragments() {
 	}
 }
 
-func (s *Store) allocID() uint64 {
+func (s *store) allocID() uint64 {
 	id, err := s.pd.GetRPC().AllocID()
 	if err != nil {
 		log.Fatalf("alloc id failed, errors:%+v", err)

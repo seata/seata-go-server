@@ -8,7 +8,7 @@ import (
 	"seata.io/server/pkg/meta"
 )
 
-func (s *Store) runPRTask(ctx context.Context, id uint64) {
+func (s *store) runPRTask(ctx context.Context, id uint64) {
 	log.Infof("pr event worker %d start", id)
 
 	hasEvent := true
@@ -23,16 +23,18 @@ func (s *Store) runPRTask(ctx context.Context, id uint64) {
 			}
 
 			hasEvent = false
-			s.foreachFragments(func(pr *PeerReplicate) {
+			s.ForeachReplicate(func(pr *PeerReplicate) bool {
 				if pr.workerID == id && pr.tc.HandleEvent() {
 					hasEvent = true
 				}
+
+				return true
 			})
 		}
 	}
 }
 
-func (s *Store) runCheckConcurrencyTask(ctx context.Context) {
+func (s *store) runCheckConcurrencyTask(ctx context.Context) {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
@@ -47,7 +49,7 @@ func (s *Store) runCheckConcurrencyTask(ctx context.Context) {
 	}
 }
 
-func (s *Store) runHBTask(ctx context.Context) {
+func (s *store) runHBTask(ctx context.Context) {
 	ticker := time.NewTicker(s.cfg.MaxPeerDownDuration / 5)
 	defer ticker.Stop()
 
@@ -62,7 +64,7 @@ func (s *Store) runHBTask(ctx context.Context) {
 	}
 }
 
-func (s *Store) runGCRMTask(ctx context.Context) {
+func (s *store) runGCRMTask(ctx context.Context) {
 	gcRMticker := time.NewTicker(s.cfg.RMLease)
 	defer gcRMticker.Stop()
 
@@ -77,7 +79,7 @@ func (s *Store) runGCRMTask(ctx context.Context) {
 	}
 }
 
-func (s *Store) runManualTask(ctx context.Context) {
+func (s *store) runManualTask(ctx context.Context) {
 	manualTicker := time.NewTicker(time.Second * 10)
 	defer manualTicker.Stop()
 
@@ -93,23 +95,27 @@ func (s *Store) runManualTask(ctx context.Context) {
 	}
 }
 
-func (s *Store) doCheckConcurrency() {
-	s.foreachFragments(func(pr *PeerReplicate) {
+func (s *store) doCheckConcurrency() {
+	s.ForeachReplicate(func(pr *PeerReplicate) bool {
 		if pr.isLeader() {
 			pr.doCheckConcurrency()
 		}
+
+		return true
 	})
 }
 
-func (s *Store) doHB() {
-	s.foreachFragments(func(pr *PeerReplicate) {
+func (s *store) doHB() {
+	s.ForeachReplicate(func(pr *PeerReplicate) bool {
 		if pr.isLeader() {
 			pr.doHB()
 		}
+
+		return true
 	})
 }
 
-func (s *Store) doGCRM() {
+func (s *store) doGCRM() {
 	log.Debugf("[GC-RM]: start")
 
 	now := time.Now()
@@ -146,10 +152,12 @@ func (s *Store) doGCRM() {
 	return
 }
 
-func (s *Store) doManual() {
-	s.foreachFragments(func(pr *PeerReplicate) {
+func (s *store) doManual() {
+	s.ForeachReplicate(func(pr *PeerReplicate) bool {
 		if pr.isLeader() {
 			pr.tc.HandleManual()
 		}
+
+		return true
 	})
 }

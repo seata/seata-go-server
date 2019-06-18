@@ -22,6 +22,7 @@ type Cfg struct {
 	MaxPeerDownDuration time.Duration
 	RMLease             time.Duration
 	CoreOptions         []core.Option
+	TC                  core.TransactionCoordinator
 	InitFragments       int
 	Concurrency         int
 	OverloadPercentage  uint64

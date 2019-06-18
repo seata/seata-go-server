@@ -11,14 +11,15 @@ import (
 	"seata.io/server/pkg/meta"
 )
 
-// PeerReplicate is the peer replicate. Every Fragment replicate has a PeerReplicate.
+// PeerReplicate is the fragment peer replicatation.
+// Every Fragment has N replicatation in N stores.
 type PeerReplicate struct {
 	sync.RWMutex
 
 	tag           string
 	id            uint64
 	workerID      uint64
-	store         *Store
+	store         Store
 	peer          prophet.Peer
 	frag          meta.Fragment
 	pendingPeers  []prophet.Peer
@@ -29,18 +30,18 @@ type PeerReplicate struct {
 	overloadTimes, overloadCheckTimes uint64
 }
 
-func createPeerReplicate(store *Store, frag meta.Fragment) (*PeerReplicate, error) {
-	peer, ok := findPeer(frag.Peers, store.meta.ID)
+func createPeerReplicate(store Store, frag meta.Fragment) (*PeerReplicate, error) {
+	peer, ok := findPeer(frag.Peers, store.Meta().ID)
 	if !ok {
 		return nil, fmt.Errorf("find no peer for store %d in frag %v",
-			store.meta.ID,
+			store.Meta().ID,
 			frag)
 	}
 
 	return newPeerReplicate(store, frag, peer), nil
 }
 
-func newPeerReplicate(store *Store, frag meta.Fragment, peer prophet.Peer) *PeerReplicate {
+func newPeerReplicate(store Store, frag meta.Fragment, peer prophet.Peer) *PeerReplicate {
 	tag := fmt.Sprintf("[frag-%d]:", frag.ID)
 	if peer.ID == 0 {
 		log.Fatalf("%s invalid peer id 0",
@@ -55,14 +56,19 @@ func newPeerReplicate(store *Store, frag meta.Fragment, peer prophet.Peer) *Peer
 	pr.store = store
 	pr.heartbeatsMap = &sync.Map{}
 
-	opts := append(store.cfg.CoreOptions, core.WithConcurrency(store.cfg.Concurrency))
-	tc, err := core.NewCellTransactionCoordinator(frag.ID, peer.ID, store.seataTrans, opts...)
-	if err != nil {
-		log.Fatalf("%s init failed with %+v",
-			pr.tag,
-			err)
+	if store.Cfg().TC != nil {
+		pr.tc = store.Cfg().TC
+	} else {
+		opts := append(store.Cfg().CoreOptions, core.WithConcurrency(store.Cfg().Concurrency))
+		tc, err := core.NewCellTransactionCoordinator(frag.ID, peer.ID, store.Transport(), opts...)
+		if err != nil {
+			log.Fatalf("%s init failed with %+v",
+				pr.tag,
+				err)
+		}
+		pr.tc = tc
 	}
-	pr.tc = tc
+
 	log.Infof("%s created with %+v",
 		pr.tag,
 		pr.frag)
@@ -86,16 +92,21 @@ func (pr *PeerReplicate) addPeer(peer prophet.Peer) {
 }
 
 func (pr *PeerReplicate) removePeer(peer prophet.Peer) {
+	removed := false
 	var values []prophet.Peer
 	for _, p := range pr.frag.Peers {
 		if p.ID != peer.ID {
 			values = append(values, p)
+		} else {
+			removed = true
 		}
 	}
 
-	pr.frag.Peers = values
-	pr.heartbeatsMap.Delete(peer.ID)
-	pr.frag.Version++
+	if removed {
+		pr.frag.Peers = values
+		pr.heartbeatsMap.Delete(peer.ID)
+		pr.frag.Version++
+	}
 }
 
 func (pr *PeerReplicate) removePendingPeer(peer prophet.Peer) {
@@ -148,8 +159,8 @@ func (pr *PeerReplicate) doHB() {
 	defer pr.RUnlock()
 
 	for _, p := range pr.frag.Peers {
-		if p.ContainerID != pr.store.meta.ID {
-			pr.store.trans.sendMsg(p.ContainerID, &meta.HBMsg{
+		if p.ContainerID != pr.store.Meta().ID {
+			pr.store.ShardingTransport().Send(p.ContainerID, &meta.HBMsg{
 				Frag: pr.frag,
 			})
 		}
@@ -164,12 +175,12 @@ func (pr *PeerReplicate) doCheckConcurrency() {
 
 	log.Debugf("%s start check concurrency task", pr.tag)
 
-	if pr.tc.ActiveGCount() > pr.store.cfg.Concurrency {
+	if pr.tc.ActiveGCount() > pr.store.Cfg().Concurrency {
 		pr.overloadTimes++
 	}
 
 	pr.overloadCheckTimes++
-	if pr.overloadCheckTimes == pr.store.cfg.OverloadPeriod {
+	if pr.overloadCheckTimes == pr.store.Cfg().OverloadPeriod {
 		if pr.maybeGrow() {
 			log.Infof("%s already grow, check concurrency task stopped",
 				pr.tag)
@@ -184,7 +195,7 @@ func (pr *PeerReplicate) maybeGrow() bool {
 		return false
 	}
 
-	if pr.overloadTimes*100/pr.store.cfg.OverloadPeriod <= pr.store.cfg.OverloadPercentage {
+	if pr.overloadTimes*100/pr.store.Cfg().OverloadPeriod <= pr.store.Cfg().OverloadPercentage {
 		return false
 	}
 
@@ -194,16 +205,16 @@ func (pr *PeerReplicate) maybeGrow() bool {
 	pr.overloadTimes = 0
 	pr.frag.DisableGrow = true
 	pr.frag.Version++
-	pr.store.mustUpdateFragmentOnStore(pr.frag, pr.peer)
+	pr.store.MustUpdateFragment(pr.peer.ContainerID, pr.frag)
 
-	frag := pr.store.createFristFragment()
+	frag := pr.store.CreateFragment()
 	newPR, err := createPeerReplicate(pr.store, frag)
 	if err != nil {
 		log.Fatalf("%s: new pr on grow failed with %+v",
 			pr.tag,
 			err)
 	}
-	pr.store.doAddPR(newPR)
+	pr.store.AddReplicate(newPR)
 	return true
 }
 

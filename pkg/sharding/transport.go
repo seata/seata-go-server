@@ -15,6 +15,14 @@ var (
 	errConnect = errors.New("not connected")
 )
 
+// Transport sharding transport
+type Transport interface {
+	Start()
+	Stop()
+
+	Send(uint64, interface{})
+}
+
 type sendMsg struct {
 	to   uint64
 	data interface{}
@@ -23,7 +31,7 @@ type sendMsg struct {
 type shardingTransport struct {
 	sync.RWMutex
 
-	store             *Store
+	store             Store
 	server            *goetty.Server
 	storeAddrDetector func(storeID uint64) (string, error)
 	addrs             *sync.Map
@@ -32,9 +40,9 @@ type shardingTransport struct {
 	msgs              *task.Queue
 }
 
-func newShardingTransport(store *Store) *shardingTransport {
+func newShardingTransport(store Store) Transport {
 	t := &shardingTransport{
-		server: goetty.NewServer(store.meta.Addr,
+		server: goetty.NewServer(store.Meta().Addr,
 			goetty.WithServerDecoder(meta.ShardingDecoder),
 			goetty.WithServerEncoder(meta.ShardingEncoder)),
 		conns:       make(map[uint64]goetty.IOSessionPool),
@@ -49,9 +57,9 @@ func newShardingTransport(store *Store) *shardingTransport {
 	return t
 }
 
-func (t *shardingTransport) start() {
+func (t *shardingTransport) Start() {
 	go t.readyToSend()
-	log.Infof("sharding transport start listen at %s", t.store.meta.Addr)
+	log.Infof("sharding transport start listen at %s", t.store.Meta().Addr)
 	go func() {
 		err := t.server.Start(t.doConnection)
 		if err != nil {
@@ -61,7 +69,7 @@ func (t *shardingTransport) start() {
 	}()
 }
 
-func (t *shardingTransport) stop() {
+func (t *shardingTransport) Stop() {
 	t.msgs.Dispose()
 	t.server.Stop()
 	log.Infof("sharding transport stopped")
@@ -85,16 +93,16 @@ func (t *shardingTransport) doConnection(session goetty.IOSession) error {
 			return err
 		}
 
-		ack := t.store.handleReplicate(msg)
+		ack := t.store.HandleShardingMsg(msg)
 		if ack != nil {
 			session.WriteAndFlush(ack)
 		}
 	}
 }
 
-func (t *shardingTransport) sendMsg(to uint64, msg interface{}) {
-	if to == t.store.meta.ID {
-		t.store.handleReplicate(msg)
+func (t *shardingTransport) Send(to uint64, msg interface{}) {
+	if to == t.store.Meta().ID {
+		t.store.HandleShardingMsg(msg)
 		return
 	}
 
@@ -220,7 +228,7 @@ func (t *shardingTransport) checkConnect(id uint64, conn goetty.IOSession) bool 
 				return
 			}
 
-			ack := t.store.handleReplicate(data)
+			ack := t.store.HandleShardingMsg(data)
 			if ack != nil {
 				log.Fatalf("%+v %T unexpect ack %T", data, data, ack)
 			}
@@ -243,14 +251,14 @@ func (t *shardingTransport) createConn(id uint64) (goetty.IOSession, error) {
 }
 
 func (t *shardingTransport) getStoreAddr(storeID uint64) (string, error) {
+	var err error
 	addr, ok := t.addrs.Load(storeID)
 	if !ok {
-		c, err := t.store.pd.GetStore().GetContainer(storeID)
+		addr, err = t.store.GetStoreAddr(storeID)
 		if err != nil {
 			return "", err
 		}
 
-		addr = c.(*ContainerAdapter).meta.Addr
 		t.addrs.Store(storeID, addr)
 		t.addrsRevert.Store(addr, storeID)
 	}
