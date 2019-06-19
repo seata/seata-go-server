@@ -12,15 +12,17 @@ import (
 func (s *store) startProphet() {
 	log.Infof("start prophet")
 
-	s.pdStartedC = make(chan struct{})
-	adapter := &ProphetAdapter{store: s}
-	s.cfg.ProphetOptions = append(s.cfg.ProphetOptions, prophet.WithRoleChangeHandler(s))
-	s.pd = prophet.NewProphet(s.cfg.ProphetName, s.cfg.ProphetAddr, adapter, s.cfg.ProphetOptions...)
+	if s.storage == nil {
+		s.storage = newStorage(s.cfg.DataPath, s.pd.GetEtcdClient())
+	}
 
-	s.storage = newStorage(s.cfg.DataPath, s.pd.GetEtcdClient())
+	adapter := &ProphetAdapter{store: s}
 	s.cfg.CoreOptions = append(s.cfg.CoreOptions,
 		core.WithElectorOptions(election.WithEtcd(s.pd.GetEtcdClient())))
 
+	s.pdStartedC = make(chan struct{})
+	s.cfg.ProphetOptions = append(s.cfg.ProphetOptions, prophet.WithRoleChangeHandler(s))
+	s.pd = prophet.NewProphet(s.cfg.ProphetName, s.cfg.ProphetAddr, adapter, s.cfg.ProphetOptions...)
 	s.pd.Start()
 	<-s.pdStartedC
 }

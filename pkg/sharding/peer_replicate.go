@@ -56,8 +56,8 @@ func newPeerReplicate(store Store, frag meta.Fragment, peer prophet.Peer) *PeerR
 	pr.store = store
 	pr.heartbeatsMap = &sync.Map{}
 
-	if store.Cfg().TC != nil {
-		pr.tc = store.Cfg().TC
+	if store.Cfg().tc != nil {
+		pr.tc = store.Cfg().tc
 	} else {
 		opts := append(store.Cfg().CoreOptions, core.WithConcurrency(store.Cfg().Concurrency))
 		tc, err := core.NewCellTransactionCoordinator(frag.ID, peer.ID, store.Transport(), opts...)

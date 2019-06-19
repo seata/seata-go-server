@@ -67,6 +67,7 @@ func (t *shardingTransport) Start() {
 				err)
 		}
 	}()
+	<-t.server.Started()
 }
 
 func (t *shardingTransport) Stop() {

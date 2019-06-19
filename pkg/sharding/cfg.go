@@ -6,6 +6,7 @@ import (
 	"github.com/infinivision/prophet"
 	"seata.io/server/pkg/core"
 	"seata.io/server/pkg/meta"
+	"seata.io/server/pkg/transport"
 )
 
 // Cfg raftstore configuration
@@ -22,7 +23,6 @@ type Cfg struct {
 	MaxPeerDownDuration time.Duration
 	RMLease             time.Duration
 	CoreOptions         []core.Option
-	TC                  core.TransactionCoordinator
 	InitFragments       int
 	Concurrency         int
 	OverloadPercentage  uint64
@@ -30,6 +30,13 @@ type Cfg struct {
 	TransSendCB         func(meta.ResourceManager, meta.Notify) error
 	TransWorkerCount    int
 	PRWorkerCount       int
+
+	// just for test
+	storage       storage
+	tc            core.TransactionCoordinator
+	shardingTrans Transport
+	seataTrans    transport.Transport
+	storeID       uint64
 }
 
 // Adjust adjust

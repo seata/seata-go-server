@@ -75,6 +75,12 @@ func (s *store) handleHBACK(msg *meta.HBACKMsg) interface{} {
 			ID: pr.frag.ID,
 		})
 		return nil
+	} else if pr.frag.Version < msg.Version {
+		pr.destroy()
+		s.doRemovePR(pr.frag.ID)
+		log.Infof("%s destroy complete",
+			pr.tag)
+		return nil
 	}
 
 	pr.removePendingPeer(msg.Peer)

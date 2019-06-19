@@ -67,12 +67,13 @@ type store struct {
 
 	cfg        Cfg
 	meta       meta.StoreMeta
-	storage    *storage
 	replicates *sync.Map
 	pd         *prophet.Prophet
 	bootOnce   *sync.Once
 	pdStartedC chan struct{}
 	runner     *task.Runner
+
+	storage    storage
 	trans      Transport
 	seataTrans transport.Transport
 
@@ -95,8 +96,27 @@ func NewStore(cfg Cfg) Store {
 	s.bootOnce = &sync.Once{}
 
 	s.runner = task.NewRunner()
-	s.trans = newShardingTransport(s)
-	s.seataTrans = transport.NewTransport(cfg.TransWorkerCount, s.rmAddrDetecter, cfg.TransSendCB)
+
+	if s.cfg.storeID != 0 {
+		s.meta.ID = s.cfg.storeID
+	}
+
+	if s.cfg.storage != nil {
+		s.storage = s.cfg.storage
+	}
+
+	if cfg.shardingTrans != nil {
+		s.trans = cfg.shardingTrans
+	} else {
+		s.trans = newShardingTransport(s)
+	}
+
+	if cfg.seataTrans != nil {
+		s.seataTrans = s.cfg.seataTrans
+	} else {
+		s.seataTrans = transport.NewTransport(cfg.TransWorkerCount, s.rmAddrDetecter, cfg.TransSendCB)
+	}
+
 	return s
 }
 

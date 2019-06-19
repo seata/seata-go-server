@@ -27,12 +27,24 @@ var (
 	errTxnFailed = errors.New("failed to commit transaction")
 )
 
-type storage struct {
+type storage interface {
+	get(key []byte) ([]byte, error)
+	set(key, value []byte) error
+
+	countFragments(id uint64) (int, error)
+	loadFragments(store uint64, handleFunc func(value []byte) (uint64, error)) error
+	createFragment(frag meta.Fragment, peer prophet.Peer) error
+	updateFragment(storeID uint64, frag meta.Fragment) error
+	removeFragmentOnStore(frag meta.Fragment, peer prophet.Peer) error
+	removeFragment(id uint64) error
+}
+
+type defaultStorage struct {
 	db      *badger.DB
 	etcdCli *clientv3.Client
 }
 
-func newStorage(dir string, etcdCli *clientv3.Client) *storage {
+func newStorage(dir string, etcdCli *clientv3.Client) *defaultStorage {
 	opts := badger.DefaultOptions
 	opts.Dir = dir
 	opts.ValueDir = dir
@@ -41,13 +53,13 @@ func newStorage(dir string, etcdCli *clientv3.Client) *storage {
 		log.Fatalf("create storage failed with %+v", err)
 	}
 
-	return &storage{
+	return &defaultStorage{
 		db:      db,
 		etcdCli: etcdCli,
 	}
 }
 
-func (s *storage) loadFragments(store uint64, handleFunc func(value []byte) (uint64, error)) error {
+func (s *defaultStorage) loadFragments(store uint64, handleFunc func(value []byte) (uint64, error)) error {
 	prefix := getKey(store, storesPath)
 
 	start := uint64(0)
@@ -79,7 +91,7 @@ func (s *storage) loadFragments(store uint64, handleFunc func(value []byte) (uin
 	return nil
 }
 
-func (s *storage) countFragments(id uint64) (int, error) {
+func (s *defaultStorage) countFragments(id uint64) (int, error) {
 	resp, err := s.getKV(getKey(id, storesPath), clientv3.WithPrefix(), clientv3.WithCountOnly())
 	if err != nil {
 		return 0, err
@@ -87,7 +99,7 @@ func (s *storage) countFragments(id uint64) (int, error) {
 	return int(resp.Count), nil
 }
 
-func (s *storage) createFragment(frag meta.Fragment, peer prophet.Peer) error {
+func (s *defaultStorage) createFragment(frag meta.Fragment, peer prophet.Peer) error {
 	value := string(json.MustMarshal(&frag))
 	resp, err := s.etcdCli.Txn(s.etcdCli.Ctx()).
 		Then(clientv3.OpPut(getKey(frag.ID, fragmentsPath), value),
@@ -104,7 +116,7 @@ func (s *storage) createFragment(frag meta.Fragment, peer prophet.Peer) error {
 	return nil
 }
 
-func (s *storage) updateFragment(storeID uint64, frag meta.Fragment) error {
+func (s *defaultStorage) updateFragment(storeID uint64, frag meta.Fragment) error {
 	value := string(json.MustMarshal(&frag))
 	resp, err := s.etcdCli.Txn(s.etcdCli.Ctx()).
 		Then(clientv3.OpPut(getKey(frag.ID, getKey(storeID, storesPath)), value)).
@@ -120,7 +132,7 @@ func (s *storage) updateFragment(storeID uint64, frag meta.Fragment) error {
 	return nil
 }
 
-func (s *storage) removeFragmentOnStore(frag meta.Fragment, peer prophet.Peer) error {
+func (s *defaultStorage) removeFragmentOnStore(frag meta.Fragment, peer prophet.Peer) error {
 	value := string(json.MustMarshal(&frag))
 	resp, err := s.etcdCli.Txn(s.etcdCli.Ctx()).
 		Then(clientv3.OpPut(getKey(frag.ID, fragmentsPath), value),
@@ -137,7 +149,7 @@ func (s *storage) removeFragmentOnStore(frag meta.Fragment, peer prophet.Peer) e
 	return nil
 }
 
-func (s *storage) removeFragment(id uint64) error {
+func (s *defaultStorage) removeFragment(id uint64) error {
 	value, err := s.getValue(getKey(id, fragmentsPath))
 	if err != nil {
 		return err
@@ -165,14 +177,14 @@ func (s *storage) removeFragment(id uint64) error {
 	return nil
 }
 
-func (s *storage) getKV(key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error) {
+func (s *defaultStorage) getKV(key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error) {
 	ctx, cancel := context.WithTimeout(s.etcdCli.Ctx(), defaultRequestTimeout)
 	defer cancel()
 
 	return clientv3.NewKV(s.etcdCli).Get(ctx, key, opts...)
 }
 
-func (s *storage) getValue(key string) ([]byte, error) {
+func (s *defaultStorage) getValue(key string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(s.etcdCli.Ctx(), defaultRequestTimeout)
 	defer cancel()
 
@@ -188,13 +200,13 @@ func (s *storage) getValue(key string) ([]byte, error) {
 	return resp.Kvs[0].Value, nil
 }
 
-func (s *storage) set(key, value []byte) error {
+func (s *defaultStorage) set(key, value []byte) error {
 	return s.db.Update(func(txn *badger.Txn) error {
 		return txn.Set(key, value)
 	})
 }
 
-func (s *storage) get(key []byte) ([]byte, error) {
+func (s *defaultStorage) get(key []byte) ([]byte, error) {
 	var value []byte
 	err := s.db.View(func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte(key))
@@ -224,3 +236,18 @@ func (s *storage) get(key []byte) ([]byte, error) {
 func getKey(id uint64, base string) string {
 	return fmt.Sprintf("%s/%020d", base, id)
 }
+
+// just for test
+type emptyStorage struct {
+}
+
+func (s *emptyStorage) get(key []byte) ([]byte, error)        { return nil, nil }
+func (s *emptyStorage) set(key, value []byte) error           { return nil }
+func (s *emptyStorage) countFragments(id uint64) (int, error) { return 0, nil }
+func (s *emptyStorage) loadFragments(store uint64, handleFunc func(value []byte) (uint64, error)) error {
+	return nil
+}
+func (s *emptyStorage) createFragment(frag meta.Fragment, peer prophet.Peer) error        { return nil }
+func (s *emptyStorage) updateFragment(storeID uint64, frag meta.Fragment) error           { return nil }
+func (s *emptyStorage) removeFragmentOnStore(frag meta.Fragment, peer prophet.Peer) error { return nil }
+func (s *emptyStorage) removeFragment(id uint64) error                                    { return nil }
