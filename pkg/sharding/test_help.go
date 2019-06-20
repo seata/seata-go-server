@@ -10,15 +10,25 @@ import (
 
 type testTC struct {
 	core.EmptyTransactionCoordinator
-	leader  bool
-	stopped bool
-	active  int
+	leader       bool
+	stopped      bool
+	active       int
+	events       int
+	handleEvents bool
 
 	leaderPeer uint64
 }
 
 func newTestTC() *testTC {
 	return &testTC{}
+}
+
+func (tc *testTC) HandleEvent() bool {
+	if tc.handleEvents {
+		tc.events++
+	}
+
+	return tc.handleEvents
 }
 
 func (tc *testTC) ChangeLeaderTo(peerID uint64) {
@@ -162,16 +172,14 @@ func (t *testShardingTransport) Send(to uint64, data interface{}) {
 type testStorage struct {
 	emptyStorage
 
-	frags map[uint64]meta.Fragment
+	frags []meta.Fragment
 }
 
 func newTestStorage() *testStorage {
-	return &testStorage{
-		frags: make(map[uint64]meta.Fragment),
-	}
+	return &testStorage{}
 }
 
-func (s *testStorage) updateFragment(storeID uint64, frag meta.Fragment) error {
-	s.frags[storeID] = frag
+func (s *testStorage) putFragment(frag meta.Fragment) error {
+	s.frags = append(s.frags, frag)
 	return nil
 }

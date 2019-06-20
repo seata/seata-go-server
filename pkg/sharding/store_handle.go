@@ -50,7 +50,7 @@ func (s *store) handleHB(msg *meta.HBMsg) interface{} {
 	update := pr.frag.Version < msg.Frag.Version
 	pr.frag = msg.Frag
 	if update {
-		s.MustUpdateFragment(pr.peer.ContainerID, pr.frag)
+		s.MustPutFragment(pr.frag)
 	}
 
 	return &meta.HBACKMsg{

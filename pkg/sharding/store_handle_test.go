@@ -38,7 +38,7 @@ func TestHandleShardingMsgWithHB(t *testing.T) {
 	// check update
 	msg.Frag.Version = 3
 	rsp = s.HandleShardingMsg(msg)
-	assert.Equal(t, uint64(3), st.frags[10001].Version, "check handle update hb msg failed")
+	assert.Equal(t, uint64(3), st.frags[0].Version, "check handle update hb msg failed")
 	_, ok = rsp.(*meta.HBACKMsg)
 	assert.True(t, ok, "check handle update hb msg failed")
 }

@@ -33,8 +33,8 @@ type Store interface {
 	LeaderPeer(fid uint64) (prophet.Peer, error)
 	// CreateFragment create a new fragment and save it to the local data
 	CreateFragment() meta.Fragment
-	// MustUpdateFragment update the store's fragment metadata
-	MustUpdateFragment(storeID uint64, frag meta.Fragment)
+	// MustPutFragment update the store's fragment metadata
+	MustPutFragment(frag meta.Fragment)
 	// GetFragment returns a fragment replicatation from the store,
 	// when `leader` is true, only return the leader replicatation
 	GetFragment(fid uint64, leader bool) *PeerReplicate
@@ -218,7 +218,7 @@ func (s *store) Start() {
 }
 
 func (s *store) startFragments() error {
-	err := s.storage.loadFragments(s.meta.ID, func(value []byte) (uint64, error) {
+	err := s.storage.loadFragments(func(value []byte) (uint64, error) {
 		frag := meta.Fragment{}
 		json.MustUnmarshal(&frag, value)
 
@@ -270,7 +270,7 @@ func (s *store) AddPeer(id uint64, peer prophet.Peer) {
 	defer pr.Unlock()
 
 	pr.addPeer(peer)
-	s.MustUpdateFragment(peer.ContainerID, pr.frag)
+	s.MustPutFragment(pr.frag)
 
 	log.Infof("%s new peer %+v added",
 		pr.tag,
@@ -287,7 +287,7 @@ func (s *store) RemovePeer(id uint64, peer prophet.Peer) {
 	defer pr.Unlock()
 
 	pr.removePeer(peer)
-	s.mustRemoveFragmentOnStore(pr.frag, peer)
+	s.MustPutFragment(pr.frag)
 
 	s.trans.Send(peer.ContainerID, &meta.RemoveMsg{
 		ID: id,
@@ -298,8 +298,8 @@ func (s *store) RemovePeer(id uint64, peer prophet.Peer) {
 		peer)
 }
 
-func (s *store) mustCreateFragment(frag meta.Fragment, peer prophet.Peer) {
-	err := s.storage.createFragment(frag, peer)
+func (s *store) MustPutFragment(frag meta.Fragment) {
+	err := s.storage.putFragment(frag)
 	if err != nil {
 		log.Fatalf("save frag %+v failed with %+v",
 			frag,
@@ -307,31 +307,11 @@ func (s *store) mustCreateFragment(frag meta.Fragment, peer prophet.Peer) {
 	}
 }
 
-func (s *store) mustRemoveFragmentOnStore(frag meta.Fragment, peer prophet.Peer) {
-	err := s.storage.removeFragmentOnStore(frag, peer)
-	if err != nil {
-		log.Fatalf("remove frag %+v peer %+v failed with %+v",
-			frag,
-			peer,
-			err)
-	}
-}
-
-func (s *store) MustUpdateFragment(storeID uint64, frag meta.Fragment) {
-	err := s.storage.updateFragment(storeID, frag)
-	if err != nil {
-		log.Fatalf("update frag %+v on store %d failed with %+v",
-			frag,
-			storeID,
-			err)
-	}
-}
-
-func (s *store) mustRemoveFragment(id uint64) {
-	err := s.storage.removeFragment(id)
+func (s *store) mustRemoveFragment(fid uint64) {
+	err := s.storage.removeFragment(fid)
 	if err != nil {
 		log.Fatalf("remove frag %d failed with %+v",
-			id,
+			fid,
 			err)
 	}
 }
@@ -409,21 +389,21 @@ func (s *store) rmAddrDetecter(fid uint64, resource string) (meta.ResourceManage
 type emptyStore struct {
 }
 
-func (s *emptyStore) Meta() meta.StoreMeta                                  { return meta.StoreMeta{} }
-func (s *emptyStore) Cfg() Cfg                                              { return Cfg{} }
-func (s *emptyStore) Start()                                                {}
-func (s *emptyStore) FragmentsState() FragmentsState                        { return FragmentsState{} }
-func (s *emptyStore) GetStoreAddr(storeID uint64) (string, error)           { return "", nil }
-func (s *emptyStore) LeaderPeer(fid uint64) (prophet.Peer, error)           { return prophet.Peer{}, nil }
-func (s *emptyStore) CreateFragment() meta.Fragment                         { return meta.Fragment{} }
-func (s *emptyStore) MustUpdateFragment(storeID uint64, frag meta.Fragment) {}
-func (s *emptyStore) GetFragment(fid uint64, leader bool) *PeerReplicate    { return nil }
-func (s *emptyStore) ForeachReplicate(func(*PeerReplicate) bool)            {}
-func (s *emptyStore) AddReplicate(*PeerReplicate)                           {}
-func (s *emptyStore) AddPeer(fid uint64, peer prophet.Peer)                 {}
-func (s *emptyStore) RemovePeer(uint64, prophet.Peer)                       {}
-func (s *emptyStore) Transport() transport.Transport                        { return nil }
-func (s *emptyStore) ShardingTransport() Transport                          { return nil }
-func (s *emptyStore) HandleShardingMsg(data interface{}) interface{}        { return nil }
-func (s *emptyStore) AddRM(rms meta.ResourceManagerSet)                     {}
-func (s *emptyStore) RenewRMLease(pid, sid string)                          {}
+func (s *emptyStore) Meta() meta.StoreMeta                               { return meta.StoreMeta{} }
+func (s *emptyStore) Cfg() Cfg                                           { return Cfg{} }
+func (s *emptyStore) Start()                                             {}
+func (s *emptyStore) FragmentsState() FragmentsState                     { return FragmentsState{} }
+func (s *emptyStore) GetStoreAddr(storeID uint64) (string, error)        { return "", nil }
+func (s *emptyStore) LeaderPeer(fid uint64) (prophet.Peer, error)        { return prophet.Peer{}, nil }
+func (s *emptyStore) CreateFragment() meta.Fragment                      { return meta.Fragment{} }
+func (s *emptyStore) MustPutFragment(meta.Fragment)                      {}
+func (s *emptyStore) GetFragment(fid uint64, leader bool) *PeerReplicate { return nil }
+func (s *emptyStore) ForeachReplicate(func(*PeerReplicate) bool)         {}
+func (s *emptyStore) AddReplicate(*PeerReplicate)                        {}
+func (s *emptyStore) AddPeer(fid uint64, peer prophet.Peer)              {}
+func (s *emptyStore) RemovePeer(uint64, prophet.Peer)                    {}
+func (s *emptyStore) Transport() transport.Transport                     { return nil }
+func (s *emptyStore) ShardingTransport() Transport                       { return nil }
+func (s *emptyStore) HandleShardingMsg(data interface{}) interface{}     { return nil }
+func (s *emptyStore) AddRM(rms meta.ResourceManagerSet)                  {}
+func (s *emptyStore) RenewRMLease(pid, sid string)                       {}

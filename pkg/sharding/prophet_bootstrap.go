@@ -6,6 +6,7 @@ import (
 	"github.com/infinivision/prophet"
 	"seata.io/server/pkg/core"
 	"seata.io/server/pkg/election"
+	"seata.io/server/pkg/local"
 	"seata.io/server/pkg/meta"
 )
 
@@ -13,7 +14,11 @@ func (s *store) startProphet() {
 	log.Infof("start prophet")
 
 	if s.storage == nil {
-		s.storage = newStorage(s.cfg.DataPath, s.pd.GetEtcdClient())
+		ls, err := local.NewBadgerStorage(s.cfg.DataPath)
+		if err != nil {
+			log.Fatalf("create badger failed with %+v", err)
+		}
+		s.storage = newStorage(ls)
 	}
 
 	adapter := &ProphetAdapter{store: s}
@@ -64,7 +69,7 @@ func (s *store) doBootstrapCluster() {
 	s.meta.ID = s.allocID()
 	log.Infof("init store with id: %d", s.meta.ID)
 
-	count, err := s.storage.countFragments(s.meta.ID)
+	count, err := s.storage.countFragments()
 	if err != nil {
 		log.Fatalf("bootstrap store failed, errors:\n %+v", err)
 	}
@@ -106,7 +111,7 @@ func (s *store) CreateFragment() meta.Fragment {
 		ContainerID: s.meta.ID,
 	})
 
-	s.mustCreateFragment(frag, frag.Peers[0])
+	s.MustPutFragment(frag)
 	return frag
 }
 
@@ -120,7 +125,7 @@ func (s *store) createInitFragments() {
 			ContainerID: s.meta.ID,
 		}
 		frag.Peers = append(frag.Peers, peer)
-		s.mustCreateFragment(frag, peer)
+		s.MustPutFragment(frag)
 	}
 }
 

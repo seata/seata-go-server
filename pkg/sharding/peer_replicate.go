@@ -205,7 +205,7 @@ func (pr *PeerReplicate) maybeGrow() bool {
 	pr.overloadTimes = 0
 	pr.frag.DisableGrow = true
 	pr.frag.Version++
-	pr.store.MustUpdateFragment(pr.peer.ContainerID, pr.frag)
+	pr.store.MustPutFragment(pr.frag)
 
 	frag := pr.store.CreateFragment()
 	newPR, err := createPeerReplicate(pr.store, frag)
