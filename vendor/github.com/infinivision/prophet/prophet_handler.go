@@ -12,7 +12,7 @@ var (
 	errTombstoneContainer = errors.New("container is tombstone")
 )
 
-func (p *Prophet) handleResourceHeartbeat(msg *ResourceHeartbeatReq) (*resourceHeartbeatRsp, error) {
+func (p *defaultProphet) handleResourceHeartbeat(msg *ResourceHeartbeatReq) (*resourceHeartbeatRsp, error) {
 	if msg.LeaderPeer == nil && len(msg.Resource.Peers()) != 1 {
 		return nil, errReq
 	}
@@ -40,7 +40,7 @@ func (p *Prophet) handleResourceHeartbeat(msg *ResourceHeartbeatReq) (*resourceH
 	return p.coordinator.dispatch(p.rt.Resource(value.meta.ID())), nil
 }
 
-func (p *Prophet) handleContainerHeartbeat(msg *ContainerHeartbeatReq) error {
+func (p *defaultProphet) handleContainerHeartbeat(msg *ContainerHeartbeatReq) error {
 	meta := msg.Container
 	if meta != nil && meta.State() == Tombstone {
 		return errTombstoneContainer
@@ -73,7 +73,7 @@ func (p *Prophet) handleContainerHeartbeat(msg *ContainerHeartbeatReq) error {
 	return nil
 }
 
-func (p *Prophet) handleAllocID(req *allocIDReq) *allocIDRsp {
+func (p *defaultProphet) handleAllocID(req *allocIDReq) *allocIDRsp {
 	id, err := p.store.AllocID()
 	return &allocIDRsp{
 		ID:  id,
@@ -81,7 +81,7 @@ func (p *Prophet) handleAllocID(req *allocIDReq) *allocIDRsp {
 	}
 }
 
-func (p *Prophet) handleAskSplit(req *askSplitReq) *askSplitRsp {
+func (p *defaultProphet) handleAskSplit(req *askSplitReq) *askSplitRsp {
 	p.Lock()
 	defer p.Unlock()
 

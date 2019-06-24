@@ -27,7 +27,9 @@ func (s *store) startProphet() {
 
 	s.pdStartedC = make(chan struct{})
 	s.cfg.ProphetOptions = append(s.cfg.ProphetOptions, prophet.WithRoleChangeHandler(s))
-	s.pd = prophet.NewProphet(s.cfg.ProphetName, s.cfg.ProphetAddr, adapter, s.cfg.ProphetOptions...)
+	if s.pd == nil {
+		s.pd = prophet.NewProphet(s.cfg.ProphetName, s.cfg.ProphetAddr, adapter, s.cfg.ProphetOptions...)
+	}
 	s.pd.Start()
 	<-s.pdStartedC
 }

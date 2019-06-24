@@ -68,7 +68,7 @@ type store struct {
 	cfg        Cfg
 	meta       meta.StoreMeta
 	replicates *sync.Map
-	pd         *prophet.Prophet
+	pd         prophet.Prophet
 	bootOnce   *sync.Once
 	pdStartedC chan struct{}
 	runner     *task.Runner

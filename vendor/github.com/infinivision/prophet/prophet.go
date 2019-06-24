@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
-
 	"github.com/fagongzi/goetty"
 )
 
@@ -36,7 +35,18 @@ type Adapter interface {
 }
 
 // Prophet is the distributed scheduler and coordinator
-type Prophet struct {
+type Prophet interface {
+	// Start start the prophet instance, this will start the lead election, heartbeat loop and listen requests
+	Start()
+	// GetStore returns the Store
+	GetStore() Store
+	// GetRPC returns the RPC client
+	GetRPC() RPC
+	// GetEtcdClient returns the internal etcd instance
+	GetEtcdClient() *clientv3.Client
+}
+
+type defaultProphet struct {
 	sync.Mutex
 	adapter     Adapter
 	opts        *options
@@ -59,14 +69,14 @@ type Prophet struct {
 }
 
 // NewProphet returns a prophet instance
-func NewProphet(name string, addr string, adapter Adapter, opts ...Option) *Prophet {
+func NewProphet(name string, addr string, adapter Adapter, opts ...Option) Prophet {
 	value := &options{cfg: &Cfg{}}
 	for _, opt := range opts {
 		opt(value)
 	}
 	value.adjust()
 
-	p := new(Prophet)
+	p := new(defaultProphet)
 	p.opts = value
 	p.cfg = value.cfg
 	p.adapter = adapter
@@ -91,7 +101,7 @@ func NewProphet(name string, addr string, adapter Adapter, opts ...Option) *Prop
 }
 
 // Start start the prophet
-func (p *Prophet) Start() {
+func (p *defaultProphet) Start() {
 	p.startListen()
 	p.startLeaderLoop()
 	p.startResourceHeartbeatLoop()
@@ -99,16 +109,16 @@ func (p *Prophet) Start() {
 }
 
 // GetStore returns the store
-func (p *Prophet) GetStore() Store {
+func (p *defaultProphet) GetStore() Store {
 	return p.store
 }
 
 // GetRPC returns the rpc interface
-func (p *Prophet) GetRPC() RPC {
+func (p *defaultProphet) GetRPC() RPC {
 	return p.rpc
 }
 
 // GetEtcdClient return etcd client for reuse
-func (p *Prophet) GetEtcdClient() *clientv3.Client {
+func (p *defaultProphet) GetEtcdClient() *clientv3.Client {
 	return p.opts.client
 }

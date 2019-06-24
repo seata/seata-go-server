@@ -312,7 +312,7 @@ func (c *codec) Decode(in *goetty.ByteBuf) (bool, interface{}, error) {
 	return true, msg, nil
 }
 
-func (p *Prophet) startListen() {
+func (p *defaultProphet) startListen() {
 	go func() {
 		err := p.tcpL.Start(p.doConnection)
 		if err != nil {
@@ -326,7 +326,7 @@ func (p *Prophet) startListen() {
 	log.Infof("prophet: start rpc listen at %s", p.node.Addr)
 }
 
-func (p *Prophet) doConnection(conn goetty.IOSession) error {
+func (p *defaultProphet) doConnection(conn goetty.IOSession) error {
 	if p.wn != nil {
 		defer p.wn.clearWatcher(conn)
 	}
@@ -362,7 +362,7 @@ func (p *Prophet) doConnection(conn goetty.IOSession) error {
 	}
 }
 
-func (p *Prophet) getLeaderClient() goetty.IOSession {
+func (p *defaultProphet) getLeaderClient() goetty.IOSession {
 	for {
 		l := p.leader
 		addr := p.node.Addr
@@ -381,7 +381,7 @@ func (p *Prophet) getLeaderClient() goetty.IOSession {
 	}
 }
 
-func (p *Prophet) createLeaderClient(leader string) (goetty.IOSession, error) {
+func (p *defaultProphet) createLeaderClient(leader string) (goetty.IOSession, error) {
 	conn := goetty.NewConnector(leader,
 		goetty.WithClientDecoder(goetty.NewIntLengthFieldBasedDecoder(p.bizCodec)),
 		goetty.WithClientEncoder(goetty.NewIntLengthFieldBasedEncoder(p.bizCodec)),

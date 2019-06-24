@@ -13,7 +13,7 @@ type HeartbeatHandler interface {
 	ChangePeer(resourceID uint64, peer *Peer, changeType ChangePeerType)
 }
 
-func (p *Prophet) startResourceHeartbeatLoop() {
+func (p *defaultProphet) startResourceHeartbeatLoop() {
 	p.doResourceHeartbeatLoop()
 
 	p.runner.RunCancelableTask(func(ctx context.Context) {
@@ -38,7 +38,7 @@ func (p *Prophet) startResourceHeartbeatLoop() {
 	})
 }
 
-func (p *Prophet) doResourceHeartbeatLoop() {
+func (p *defaultProphet) doResourceHeartbeatLoop() {
 	p.runner.RunCancelableTask(func(ctx context.Context) {
 		var conn goetty.IOSession
 		for {
@@ -92,7 +92,7 @@ func (p *Prophet) doResourceHeartbeatLoop() {
 	})
 }
 
-func (p *Prophet) startContainerHeartbeatLoop() {
+func (p *defaultProphet) startContainerHeartbeatLoop() {
 	p.runner.RunCancelableTask(func(ctx context.Context) {
 		ticker := time.NewTicker(p.adapter.ContainerHBInterval())
 		defer ticker.Stop()

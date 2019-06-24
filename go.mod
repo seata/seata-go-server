@@ -25,7 +25,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.6.2 // indirect
-	github.com/infinivision/prophet v0.0.0-20190315085614-f9dd8e65bf97
+	github.com/infinivision/prophet v0.0.0-20190624031720-aeebc9617d65
 	github.com/jonboulle/clockwork v0.1.0 // indirect
 	github.com/json-iterator/go v1.1.6 // indirect
 	github.com/labstack/echo v3.3.5+incompatible

@@ -33,7 +33,7 @@ func MatchEvent(event, flag int) bool {
 	return event == 0 || event&flag != 0
 }
 
-func (p *Prophet) notifyEvent(event *EventNotify) {
+func (p *defaultProphet) notifyEvent(event *EventNotify) {
 	if event == nil {
 		return
 	}

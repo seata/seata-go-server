@@ -57,8 +57,8 @@ github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 h1:Ovs26xHkKqVztRpIrF/92Bcuy
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0/go.mod h1:8NvIoxWQoOIhqOTXgfV/d3M/q6VIi02HzZEHgUlZvzk=
 github.com/grpc-ecosystem/grpc-gateway v1.6.2 h1:8KyC64BiO8ndiGHY5DlFWWdangUPC9QHPakFRre/Ud0=
 github.com/grpc-ecosystem/grpc-gateway v1.6.2/go.mod h1:RSKVYQBd5MCa4OVpNdGskqpgL2+G+NZTnrVHpWWfpdw=
-github.com/infinivision/prophet v0.0.0-20190315085614-f9dd8e65bf97 h1:9CQHD5KOApo/Y4hcIEKPcUlNNbCHu8/GurRwQ2KWAEk=
-github.com/infinivision/prophet v0.0.0-20190315085614-f9dd8e65bf97/go.mod h1:dhFxWdtpZVXDrS44qw0B3M60GBd2ujoSg48UFmuqOyI=
+github.com/infinivision/prophet v0.0.0-20190624031720-aeebc9617d65 h1:BQx1X/5FuL18exLA5Sj4NFcnQq75rH9VCjnsziFzBrs=
+github.com/infinivision/prophet v0.0.0-20190624031720-aeebc9617d65/go.mod h1:dhFxWdtpZVXDrS44qw0B3M60GBd2ujoSg48UFmuqOyI=
 github.com/jonboulle/clockwork v0.1.0 h1:VKV+ZcuP6l3yW9doeqz6ziZGgcynBVQO+obU0+0hcPo=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
 github.com/json-iterator/go v1.1.6 h1:MrUvLMLTMxbqFJ9kzlvat/rYZqZnW3u4wkLzWTaFwKs=

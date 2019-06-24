@@ -26,6 +26,9 @@ type session struct {
 	msgQ  *task.Queue
 	conn  goetty.IOSession
 	store Store
+
+	// just for test
+	cbFunc func(routeMsg *meta.RouteableMessage, rsp meta.Message, err error)
 }
 
 func newSession(conn goetty.IOSession, store Store) *session {
@@ -41,6 +44,11 @@ func newSession(conn goetty.IOSession, store Store) *session {
 }
 
 func (s *session) cb(routeMsg *meta.RouteableMessage, rsp meta.Message, err error) {
+	if s.cbFunc != nil {
+		s.cbFunc(routeMsg, rsp, err)
+		return
+	}
+
 	if err != nil {
 		if err != meta.ErrNotLeader {
 			log.Errorf("[frag-%d]: cb with %+v",

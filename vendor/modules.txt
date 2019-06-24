@@ -139,7 +139,7 @@ github.com/grpc-ecosystem/go-grpc-prometheus
 github.com/grpc-ecosystem/grpc-gateway/runtime
 github.com/grpc-ecosystem/grpc-gateway/utilities
 github.com/grpc-ecosystem/grpc-gateway/runtime/internal
-# github.com/infinivision/prophet v0.0.0-20190315085614-f9dd8e65bf97
+# github.com/infinivision/prophet v0.0.0-20190624031720-aeebc9617d65
 github.com/infinivision/prophet
 # github.com/jonboulle/clockwork v0.1.0
 github.com/jonboulle/clockwork

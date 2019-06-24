@@ -22,7 +22,7 @@ func (n *Node) marshal() string {
 	return string(data)
 }
 
-func (p *Prophet) startLeaderLoop() {
+func (p *defaultProphet) startLeaderLoop() {
 	p.runner.RunCancelableTask(func(ctx context.Context) {
 		for {
 			select {
@@ -78,7 +78,7 @@ func (p *Prophet) startLeaderLoop() {
 	<-p.completeC
 }
 
-func (p *Prophet) enableLeader() {
+func (p *defaultProphet) enableLeader() {
 	log.Infof("prophet: ********become to leader now********")
 	p.leader = p.node
 
@@ -98,7 +98,7 @@ func (p *Prophet) enableLeader() {
 	p.cfg.Handler.BecomeLeader()
 }
 
-func (p *Prophet) disableLeader() {
+func (p *defaultProphet) disableLeader() {
 	atomic.StoreInt64(&p.leaderFlag, 0)
 	log.Infof("prophet: ********become to follower now********")
 	p.leader = nil
@@ -116,17 +116,17 @@ func (p *Prophet) disableLeader() {
 	p.cfg.Handler.BecomeFollower()
 }
 
-func (p *Prophet) isLeader() bool {
+func (p *defaultProphet) isLeader() bool {
 	return 1 == atomic.LoadInt64(&p.leaderFlag)
 }
 
-func (p *Prophet) notifyElectionComplete() {
+func (p *defaultProphet) notifyElectionComplete() {
 	if p.completeC != nil {
 		p.completeC <- struct{}{}
 	}
 }
 
-func (p *Prophet) isMatchLeader(leaderNode *Node) bool {
+func (p *defaultProphet) isMatchLeader(leaderNode *Node) bool {
 	return leaderNode != nil &&
 		p.node.Name == leaderNode.Name
 }

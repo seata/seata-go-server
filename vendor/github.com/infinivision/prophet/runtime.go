@@ -12,7 +12,7 @@ const (
 type Runtime struct {
 	sync.RWMutex
 
-	p          *Prophet
+	p          *defaultProphet
 	containers map[uint64]*ContainerRuntime
 	resources  map[uint64]*ResourceRuntime
 
@@ -20,7 +20,7 @@ type Runtime struct {
 	followers map[uint64]map[uint64]*ResourceRuntime // container -> resource -> ResourceRuntime
 }
 
-func newRuntime(p *Prophet) *Runtime {
+func newRuntime(p *defaultProphet) *Runtime {
 	return &Runtime{
 		p:          p,
 		containers: make(map[uint64]*ContainerRuntime),

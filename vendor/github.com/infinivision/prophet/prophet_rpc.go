@@ -23,7 +23,7 @@ type RPC interface {
 type simpleRPC struct {
 	sync.RWMutex
 
-	prophet    *Prophet
+	prophet    *defaultProphet
 	maxConns   int
 	maxIdle    time.Duration
 	maxTimeout time.Duration
@@ -33,7 +33,7 @@ type simpleRPC struct {
 	conns      []*clientConn
 }
 
-func newSimpleRPC(prophet *Prophet) *simpleRPC {
+func newSimpleRPC(prophet *defaultProphet) *simpleRPC {
 	return &simpleRPC{
 		prophet:    prophet,
 		maxConns:   prophet.cfg.MaxRPCCons,
