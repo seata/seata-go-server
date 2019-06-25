@@ -51,10 +51,10 @@ func (e *testElector) ChangeLeaderTo(id uint64, oldLeader, newLeader uint64) err
 
 func TestStop(t *testing.T) {
 	elector := &testElector{}
-	tc, err := NewCellTransactionCoordinator(1, 2, nil, WithElector(elector))
+	tc, err := NewTransactionCoordinator(1, 2, nil, WithElector(elector))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.Stop()
 	assert.True(t, ctc.cmds.IsDisposed(), "check stop tc failed")
 	assert.True(t, elector.stopped, "check stop tc failed")
@@ -62,30 +62,30 @@ func TestStop(t *testing.T) {
 
 func TestChangeLeaderTo(t *testing.T) {
 	elector := &testElector{}
-	tc, err := NewCellTransactionCoordinator(1, 2, nil, WithElector(elector))
+	tc, err := NewTransactionCoordinator(1, 2, nil, WithElector(elector))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.ChangeLeaderTo(100)
 	assert.Equal(t, uint64(1), ctc.cmds.Len(), "check tc change to failed")
 }
 
 func TestActiveGCount(t *testing.T) {
 	elector := &testElector{}
-	tc, err := NewCellTransactionCoordinator(1, 2, nil, WithElector(elector))
+	tc, err := NewTransactionCoordinator(1, 2, nil, WithElector(elector))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	assert.Equal(t, 0, ctc.ActiveGCount(), "check tc active count failed")
 }
 
 func TestRegistryGlobalTransaction(t *testing.T) {
 	elector := &testElector{}
 	s := mem.NewStorage()
-	tc, err := NewCellTransactionCoordinator(1, 2, nil, WithElector(elector), WithStorage(s), WithIDGenerator(id.NewSnowflakeGenerator(1)))
+	tc, err := NewTransactionCoordinator(1, 2, nil, WithElector(elector), WithStorage(s), WithIDGenerator(id.NewSnowflakeGenerator(1)))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.reset()
 
 	var result uint64
@@ -127,10 +127,10 @@ func TestRegistryGlobalTransaction(t *testing.T) {
 func TestRegistryBranchTransaction(t *testing.T) {
 	elector := &testElector{}
 	s := mem.NewStorage()
-	tc, err := NewCellTransactionCoordinator(1, 2, nil, WithElector(elector), WithStorage(s), WithIDGenerator(id.NewSnowflakeGenerator(1)))
+	tc, err := NewTransactionCoordinator(1, 2, nil, WithElector(elector), WithStorage(s), WithIDGenerator(id.NewSnowflakeGenerator(1)))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.reset()
 
 	var result uint64
@@ -183,10 +183,10 @@ func TestRegistryBranchTransaction(t *testing.T) {
 func TestReportBranchTransactionStatus(t *testing.T) {
 	elector := &testElector{}
 	s := mem.NewStorage()
-	tc, err := NewCellTransactionCoordinator(1, 2, nil, WithElector(elector), WithStorage(s), WithIDGenerator(id.NewSnowflakeGenerator(1)))
+	tc, err := NewTransactionCoordinator(1, 2, nil, WithElector(elector), WithStorage(s), WithIDGenerator(id.NewSnowflakeGenerator(1)))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.reset()
 
 	var resultErr error
@@ -234,10 +234,10 @@ func TestReportBranchTransactionStatus(t *testing.T) {
 func TestGlobalTransactionStatus(t *testing.T) {
 	elector := &testElector{}
 	s := mem.NewStorage()
-	tc, err := NewCellTransactionCoordinator(1, 2, nil, WithElector(elector), WithStorage(s), WithIDGenerator(id.NewSnowflakeGenerator(1)))
+	tc, err := NewTransactionCoordinator(1, 2, nil, WithElector(elector), WithStorage(s), WithIDGenerator(id.NewSnowflakeGenerator(1)))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.reset()
 
 	var result meta.GlobalStatus
@@ -278,13 +278,13 @@ func TestCommitGlobalTransaction(t *testing.T) {
 	elector := &testElector{}
 	s := mem.NewStorage()
 	tran := newTestTransport()
-	tc, err := NewCellTransactionCoordinator(1, 2, tran,
+	tc, err := NewTransactionCoordinator(1, 2, tran,
 		WithElector(elector),
 		WithStorage(s),
 		WithIDGenerator(id.NewSnowflakeGenerator(1)))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.reset()
 
 	var result meta.GlobalStatus
@@ -327,13 +327,13 @@ func TestRollbackGlobalTransaction(t *testing.T) {
 	elector := &testElector{}
 	s := mem.NewStorage()
 	tran := newTestTransport()
-	tc, err := NewCellTransactionCoordinator(1, 2, tran,
+	tc, err := NewTransactionCoordinator(1, 2, tran,
 		WithElector(elector),
 		WithStorage(s),
 		WithIDGenerator(id.NewSnowflakeGenerator(1)))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.reset()
 
 	var result meta.GlobalStatus
@@ -376,13 +376,13 @@ func TestBranchTransactionNotifyACK(t *testing.T) {
 	elector := &testElector{}
 	s := mem.NewStorage()
 	tran := newTestTransport()
-	tc, err := NewCellTransactionCoordinator(1, 2, tran,
+	tc, err := NewTransactionCoordinator(1, 2, tran,
 		WithElector(elector),
 		WithStorage(s),
 		WithIDGenerator(id.NewSnowflakeGenerator(1)))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.reset()
 
 	value := meta.NotifyACK{}
@@ -406,13 +406,13 @@ func TestLockable(t *testing.T) {
 	elector := &testElector{}
 	s := mem.NewStorage()
 	tran := newTestTransport()
-	tc, err := NewCellTransactionCoordinator(1, 2, tran,
+	tc, err := NewTransactionCoordinator(1, 2, tran,
 		WithElector(elector),
 		WithStorage(s),
 		WithIDGenerator(id.NewSnowflakeGenerator(1)))
 	assert.Nilf(t, err, "create failed %+v", err)
 
-	ctc := tc.(*cellTransactionCoordinator)
+	ctc := tc.(*defaultTC)
 	ctc.reset()
 
 	locks := []meta.LockKey{
@@ -482,7 +482,7 @@ func TestLockable(t *testing.T) {
 	assert.Nil(t, resultErr, "check lockable failed")
 }
 
-func mustRegistryG(ctc *cellTransactionCoordinator) uint64 {
+func mustRegistryG(ctc *defaultTC) uint64 {
 	ctc.leader = true
 	var gid uint64
 	ctc.RegistryGlobalTransaction(meta.CreateGlobalTransaction{}, func(id uint64, err error) {
@@ -492,7 +492,7 @@ func mustRegistryG(ctc *cellTransactionCoordinator) uint64 {
 	return gid
 }
 
-func mustRegistyB(ctc *cellTransactionCoordinator, gid uint64, locks ...meta.LockKey) uint64 {
+func mustRegistyB(ctc *defaultTC, gid uint64, locks ...meta.LockKey) uint64 {
 	ctc.leader = true
 	var bid uint64
 	ctc.RegistryBranchTransaction(meta.CreateBranchTransaction{GID: gid, LockKeys: locks}, func(id uint64, err error) {
@@ -502,20 +502,20 @@ func mustRegistyB(ctc *cellTransactionCoordinator, gid uint64, locks ...meta.Loc
 	return bid
 }
 
-func mustReportB(ctc *cellTransactionCoordinator, gid, bid uint64, status meta.BranchStatus) {
+func mustReportB(ctc *defaultTC, gid, bid uint64, status meta.BranchStatus) {
 	ctc.leader = true
 	ctc.ReportBranchTransactionStatus(meta.ReportBranchStatus{GID: gid, BID: bid, Status: status}, func(err error) {
 	})
 	ctc.HandleEvent()
 }
 
-func mustCommitG(ctc *cellTransactionCoordinator, gid uint64) {
+func mustCommitG(ctc *defaultTC, gid uint64) {
 	ctc.leader = true
 	ctc.CommitGlobalTransaction(gid, "", func(status meta.GlobalStatus, err error) {})
 	ctc.HandleEvent()
 }
 
-func mustACK(ctc *cellTransactionCoordinator, gid, bid uint64, status meta.BranchStatus) {
+func mustACK(ctc *defaultTC, gid, bid uint64, status meta.BranchStatus) {
 	ctc.leader = true
 	ctc.BranchTransactionNotifyACK(meta.NotifyACK{
 		GID:     gid,

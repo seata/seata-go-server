@@ -8,7 +8,7 @@ import (
 )
 
 type metricsListener struct {
-	tc *cellTransactionCoordinator
+	tc *defaultTC
 }
 
 func (m *metricsListener) OnEvent(e event) {

@@ -7,7 +7,7 @@ import (
 	"seata.io/server/pkg/util"
 )
 
-func (tc *cellTransactionCoordinator) calcGTimeout(g *meta.GlobalTransaction) error {
+func (tc *defaultTC) calcGTimeout(g *meta.GlobalTransaction) error {
 	timeout, err := util.DefaultTW.Schedule(time.Duration(g.Timeout), tc.onGTimeout, g.ID)
 	if err != nil {
 		return err
@@ -17,7 +17,7 @@ func (tc *cellTransactionCoordinator) calcGTimeout(g *meta.GlobalTransaction) er
 	return nil
 }
 
-func (tc *cellTransactionCoordinator) onGTimeout(arg interface{}) {
+func (tc *defaultTC) onGTimeout(arg interface{}) {
 	gid := arg.(uint64)
 	c := acquireCMD()
 	c.cmdType = cmdGTimeout
@@ -29,14 +29,14 @@ func (tc *cellTransactionCoordinator) onGTimeout(arg interface{}) {
 	}
 }
 
-func (tc *cellTransactionCoordinator) removeGTimeout(gid uint64) {
+func (tc *defaultTC) removeGTimeout(gid uint64) {
 	if timeout, ok := tc.timeouts[gid]; ok {
 		timeout.Stop()
 		delete(tc.timeouts, gid)
 	}
 }
 
-func (tc *cellTransactionCoordinator) onBNotifyTimeout(arg interface{}) {
+func (tc *defaultTC) onBNotifyTimeout(arg interface{}) {
 	c := acquireCMD()
 	c.cmdType = cmdBNotifyTimeout
 	c.nt = arg.(meta.Notify)
@@ -44,7 +44,7 @@ func (tc *cellTransactionCoordinator) onBNotifyTimeout(arg interface{}) {
 	tc.cmds.Put(c)
 }
 
-func (tc *cellTransactionCoordinator) calcBNotifyTimeout(nt meta.Notify) {
+func (tc *defaultTC) calcBNotifyTimeout(nt meta.Notify) {
 	c := acquireCMD()
 	c.cmdType = cmdCalcBNotifyTimeout
 	c.nt = nt
@@ -52,7 +52,7 @@ func (tc *cellTransactionCoordinator) calcBNotifyTimeout(nt meta.Notify) {
 	tc.cmds.Put(c)
 }
 
-func (tc *cellTransactionCoordinator) removeBNotifyTimeout(ack meta.NotifyACK) {
+func (tc *defaultTC) removeBNotifyTimeout(ack meta.NotifyACK) {
 	if timeout, ok := tc.notifyTimeouts[ack.ID()]; ok {
 		timeout.Stop()
 		delete(tc.notifyTimeouts, ack.ID())

@@ -124,7 +124,7 @@ func (c *cmd) respBool(value bool, err error) {
 	}
 }
 
-func (tc *cellTransactionCoordinator) HandleEvent() bool {
+func (tc *defaultTC) HandleEvent() bool {
 	if tc.cmds.Len() == 0 && !tc.cmds.IsDisposed() {
 		return false
 	}
@@ -190,7 +190,7 @@ func (tc *cellTransactionCoordinator) HandleEvent() bool {
 	return true
 }
 
-func (tc *cellTransactionCoordinator) handleTransferLeader(c *cmd) {
+func (tc *defaultTC) handleTransferLeader(c *cmd) {
 	log.Infof("[frag-%d]: my id is %d, transfer leader to peer %d",
 		tc.id,
 		tc.peerID,
@@ -213,7 +213,7 @@ func (tc *cellTransactionCoordinator) handleTransferLeader(c *cmd) {
 	tc.handleBecomeFollower()
 }
 
-func (tc *cellTransactionCoordinator) handleBecomeLeader() {
+func (tc *defaultTC) handleBecomeLeader() {
 	if tc.leader {
 		return
 	}
@@ -237,7 +237,7 @@ func (tc *cellTransactionCoordinator) handleBecomeLeader() {
 	}
 }
 
-func (tc *cellTransactionCoordinator) handleBecomeFollower() {
+func (tc *defaultTC) handleBecomeFollower() {
 	if !tc.leader {
 		return
 	}
@@ -253,7 +253,7 @@ func (tc *cellTransactionCoordinator) handleBecomeFollower() {
 	}
 }
 
-func (tc *cellTransactionCoordinator) handleRegistryGlobalTransaction(c *cmd) {
+func (tc *defaultTC) handleRegistryGlobalTransaction(c *cmd) {
 	if !tc.leader {
 		tc.publishEvent(event{eventType: registerGFailed, data: c.createG})
 		c.respID(0, meta.ErrNotLeader)
@@ -296,7 +296,7 @@ func (tc *cellTransactionCoordinator) handleRegistryGlobalTransaction(c *cmd) {
 	c.respID(id, nil)
 }
 
-func (tc *cellTransactionCoordinator) handleRegistryBranchTransaction(c *cmd) {
+func (tc *defaultTC) handleRegistryBranchTransaction(c *cmd) {
 	if !tc.leader {
 		tc.publishEvent(event{eventType: registerBFailed, data: c.createB})
 		c.respID(0, meta.ErrNotLeader)
@@ -378,7 +378,7 @@ func (tc *cellTransactionCoordinator) handleRegistryBranchTransaction(c *cmd) {
 	c.respID(b.ID, nil)
 }
 
-func (tc *cellTransactionCoordinator) handleReportB(c *cmd) {
+func (tc *defaultTC) handleReportB(c *cmd) {
 	switch c.reportB.Status {
 	case meta.BranchStatusPhaseOneDone:
 		break
@@ -443,7 +443,7 @@ func (tc *cellTransactionCoordinator) handleReportB(c *cmd) {
 	c.respError(nil)
 }
 
-func (tc *cellTransactionCoordinator) handleGlobalTransactionStatus(c *cmd) {
+func (tc *defaultTC) handleGlobalTransactionStatus(c *cmd) {
 	if !tc.leader {
 		c.respStatus(meta.GlobalStatusUnKnown, meta.ErrNotLeader)
 		return
@@ -458,7 +458,7 @@ func (tc *cellTransactionCoordinator) handleGlobalTransactionStatus(c *cmd) {
 	c.respStatus(g.Status, nil)
 }
 
-func (tc *cellTransactionCoordinator) handleCommitGlobalTransaction(c *cmd) {
+func (tc *defaultTC) handleCommitGlobalTransaction(c *cmd) {
 	if !tc.leader {
 		tc.publishEvent(event{eventType: commitGFailed, data: c.gid})
 		c.respStatus(meta.GlobalStatusUnKnown, meta.ErrNotLeader)
@@ -519,7 +519,7 @@ func (tc *cellTransactionCoordinator) handleCommitGlobalTransaction(c *cmd) {
 	tc.doCommit(g)
 }
 
-func (tc *cellTransactionCoordinator) handleRollbackGlobalTransaction(c *cmd) {
+func (tc *defaultTC) handleRollbackGlobalTransaction(c *cmd) {
 	gid := c.gid
 	who := c.who
 
@@ -608,7 +608,7 @@ func (tc *cellTransactionCoordinator) handleRollbackGlobalTransaction(c *cmd) {
 	tc.doRollback(g)
 }
 
-func (tc *cellTransactionCoordinator) handleBNotifyACK(c *cmd) {
+func (tc *defaultTC) handleBNotifyACK(c *cmd) {
 	ack := c.ack
 
 	if !tc.leader {
@@ -739,7 +739,7 @@ func (tc *cellTransactionCoordinator) handleBNotifyACK(c *cmd) {
 	return
 }
 
-func (tc *cellTransactionCoordinator) handleLockable(c *cmd) {
+func (tc *defaultTC) handleLockable(c *cmd) {
 	if !tc.leader {
 		c.respBool(false, meta.ErrNotLeader)
 		return
@@ -765,7 +765,7 @@ func (tc *cellTransactionCoordinator) handleLockable(c *cmd) {
 	c.respBool(true, nil)
 }
 
-func (tc *cellTransactionCoordinator) handleGTimeout(c *cmd) {
+func (tc *defaultTC) handleGTimeout(c *cmd) {
 	gid := c.gid
 
 	if !tc.leader {
@@ -783,7 +783,7 @@ func (tc *cellTransactionCoordinator) handleGTimeout(c *cmd) {
 	tc.doGTimeout(gid)
 }
 
-func (tc *cellTransactionCoordinator) handleGComplete(c *cmd) {
+func (tc *defaultTC) handleGComplete(c *cmd) {
 	if !tc.leader {
 		return
 	}
@@ -791,7 +791,7 @@ func (tc *cellTransactionCoordinator) handleGComplete(c *cmd) {
 	tc.doComplete(c.gid)
 }
 
-func (tc *cellTransactionCoordinator) handleCalcBNotifyTimeout(c *cmd) {
+func (tc *defaultTC) handleCalcBNotifyTimeout(c *cmd) {
 	if !tc.leader {
 		return
 	}
@@ -806,7 +806,7 @@ func (tc *cellTransactionCoordinator) handleCalcBNotifyTimeout(c *cmd) {
 	}
 }
 
-func (tc *cellTransactionCoordinator) handleBNotifyTimeout(c *cmd) {
+func (tc *defaultTC) handleBNotifyTimeout(c *cmd) {
 	if !tc.leader {
 		return
 	}

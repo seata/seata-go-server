@@ -60,7 +60,7 @@ func newPeerReplicate(store Store, frag meta.Fragment, peer prophet.Peer) *PeerR
 		pr.tc = store.Cfg().tc
 	} else {
 		opts := append(store.Cfg().CoreOptions, core.WithConcurrency(store.Cfg().Concurrency))
-		tc, err := core.NewCellTransactionCoordinator(frag.ID, peer.ID, store.Transport(), opts...)
+		tc, err := core.NewTransactionCoordinator(frag.ID, peer.ID, store.Transport(), opts...)
 		if err != nil {
 			log.Fatalf("%s init failed with %+v",
 				pr.tag,

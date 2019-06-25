@@ -16,7 +16,7 @@ const (
 	batch = 1000
 )
 
-type cellTransactionCoordinator struct {
+type defaultTC struct {
 	opts options
 
 	id, peerID, leaderPeerID uint64
@@ -42,9 +42,9 @@ type cellTransactionCoordinator struct {
 	cmds *task.RingBuffer
 }
 
-// NewCellTransactionCoordinator create a transaction coordinator used Elasticell with meta storage
-func NewCellTransactionCoordinator(id, peerID uint64, trans transport.Transport, opts ...Option) (TransactionCoordinator, error) {
-	tc := &cellTransactionCoordinator{}
+// NewTransactionCoordinator create a transaction coordinator using spec options
+func NewTransactionCoordinator(id, peerID uint64, trans transport.Transport, opts ...Option) (TransactionCoordinator, error) {
+	tc := &defaultTC{}
 
 	for _, opt := range opts {
 		opt(&tc.opts)
@@ -79,18 +79,18 @@ func NewCellTransactionCoordinator(id, peerID uint64, trans transport.Transport,
 	return tc, nil
 }
 
-func (tc *cellTransactionCoordinator) Stop() {
+func (tc *defaultTC) Stop() {
 	tc.cmds.Dispose()
 	tc.cancel()
 	tc.elector.Stop(tc.id)
 	log.Infof("[frag-%d]: stopped", tc.id)
 }
 
-func (tc *cellTransactionCoordinator) IsLeader() bool {
+func (tc *defaultTC) IsLeader() bool {
 	return tc.leader
 }
 
-func (tc *cellTransactionCoordinator) ChangeLeaderTo(id uint64) {
+func (tc *defaultTC) ChangeLeaderTo(id uint64) {
 	if id == tc.peerID {
 		return
 	}
@@ -101,7 +101,7 @@ func (tc *cellTransactionCoordinator) ChangeLeaderTo(id uint64) {
 	tc.cmds.Put(c)
 }
 
-func (tc *cellTransactionCoordinator) CurrentLeader() (uint64, error) {
+func (tc *defaultTC) CurrentLeader() (uint64, error) {
 	if tc.leader {
 		return tc.peerID, nil
 	}
@@ -113,11 +113,11 @@ func (tc *cellTransactionCoordinator) CurrentLeader() (uint64, error) {
 	return tc.elector.CurrentLeader(tc.id)
 }
 
-func (tc *cellTransactionCoordinator) ActiveGCount() int {
+func (tc *defaultTC) ActiveGCount() int {
 	return tc.doGetGCount()
 }
 
-func (tc *cellTransactionCoordinator) HandleManual() {
+func (tc *defaultTC) HandleManual() {
 	log.Debugf("[frag-%d]: manual start",
 		tc.id)
 
@@ -178,7 +178,7 @@ func (tc *cellTransactionCoordinator) HandleManual() {
 }
 
 // RegistryGlobalTransaction registry a global transaction
-func (tc *cellTransactionCoordinator) RegistryGlobalTransaction(value meta.CreateGlobalTransaction, cb func(uint64, error)) {
+func (tc *defaultTC) RegistryGlobalTransaction(value meta.CreateGlobalTransaction, cb func(uint64, error)) {
 	if !tc.leader {
 		cb(0, meta.ErrNotLeader)
 		return
@@ -197,7 +197,7 @@ func (tc *cellTransactionCoordinator) RegistryGlobalTransaction(value meta.Creat
 }
 
 // RegistryBranchTransaction registry a branch transaction
-func (tc *cellTransactionCoordinator) RegistryBranchTransaction(value meta.CreateBranchTransaction, cb func(uint64, error)) {
+func (tc *defaultTC) RegistryBranchTransaction(value meta.CreateBranchTransaction, cb func(uint64, error)) {
 	if !tc.leader {
 		cb(0, meta.ErrNotLeader)
 		return
@@ -215,7 +215,7 @@ func (tc *cellTransactionCoordinator) RegistryBranchTransaction(value meta.Creat
 	}
 }
 
-func (tc *cellTransactionCoordinator) ReportBranchTransactionStatus(value meta.ReportBranchStatus, cb func(error)) {
+func (tc *defaultTC) ReportBranchTransactionStatus(value meta.ReportBranchStatus, cb func(error)) {
 	if !tc.leader {
 		cb(meta.ErrNotLeader)
 		return
@@ -233,7 +233,7 @@ func (tc *cellTransactionCoordinator) ReportBranchTransactionStatus(value meta.R
 	}
 }
 
-func (tc *cellTransactionCoordinator) GlobalTransactionStatus(gid uint64, cb func(meta.GlobalStatus, error)) {
+func (tc *defaultTC) GlobalTransactionStatus(gid uint64, cb func(meta.GlobalStatus, error)) {
 	if !tc.leader {
 		cb(meta.GlobalStatusUnKnown, meta.ErrNotLeader)
 		return
@@ -251,7 +251,7 @@ func (tc *cellTransactionCoordinator) GlobalTransactionStatus(gid uint64, cb fun
 	}
 }
 
-func (tc *cellTransactionCoordinator) CommitGlobalTransaction(gid uint64, who string, cb func(meta.GlobalStatus, error)) {
+func (tc *defaultTC) CommitGlobalTransaction(gid uint64, who string, cb func(meta.GlobalStatus, error)) {
 	if !tc.leader {
 		cb(meta.GlobalStatusUnKnown, meta.ErrNotLeader)
 		return
@@ -270,7 +270,7 @@ func (tc *cellTransactionCoordinator) CommitGlobalTransaction(gid uint64, who st
 	}
 }
 
-func (tc *cellTransactionCoordinator) RollbackGlobalTransaction(gid uint64, who string, cb func(meta.GlobalStatus, error)) {
+func (tc *defaultTC) RollbackGlobalTransaction(gid uint64, who string, cb func(meta.GlobalStatus, error)) {
 	if !tc.leader {
 		cb(meta.GlobalStatusUnKnown, meta.ErrNotLeader)
 		return
@@ -289,7 +289,7 @@ func (tc *cellTransactionCoordinator) RollbackGlobalTransaction(gid uint64, who 
 	}
 }
 
-func (tc *cellTransactionCoordinator) BranchTransactionNotifyACK(ack meta.NotifyACK) {
+func (tc *defaultTC) BranchTransactionNotifyACK(ack meta.NotifyACK) {
 	if !tc.leader {
 		return
 	}
@@ -301,7 +301,7 @@ func (tc *cellTransactionCoordinator) BranchTransactionNotifyACK(ack meta.Notify
 	tc.cmds.Put(c)
 }
 
-func (tc *cellTransactionCoordinator) Lockable(resource string, gid uint64, lockKeys []meta.LockKey, cb func(bool, error)) {
+func (tc *defaultTC) Lockable(resource string, gid uint64, lockKeys []meta.LockKey, cb func(bool, error)) {
 	if !tc.leader {
 		cb(false, meta.ErrNotLeader)
 		return
@@ -321,7 +321,7 @@ func (tc *cellTransactionCoordinator) Lockable(resource string, gid uint64, lock
 	}
 }
 
-func (tc *cellTransactionCoordinator) checkPhaseOneCommitted(g *meta.GlobalTransaction) bool {
+func (tc *defaultTC) checkPhaseOneCommitted(g *meta.GlobalTransaction) bool {
 	completed := true
 	for _, b := range g.Branches {
 		if !b.PhaseOneCommitted() {
@@ -334,7 +334,7 @@ func (tc *cellTransactionCoordinator) checkPhaseOneCommitted(g *meta.GlobalTrans
 	return completed
 }
 
-func (tc *cellTransactionCoordinator) mustDo(doFunc func() error) error {
+func (tc *defaultTC) mustDo(doFunc func() error) error {
 	times := 0
 
 	for {
@@ -352,7 +352,7 @@ func (tc *cellTransactionCoordinator) mustDo(doFunc func() error) error {
 	return nil
 }
 
-func (tc *cellTransactionCoordinator) mustSave(g *meta.GlobalTransaction) {
+func (tc *defaultTC) mustSave(g *meta.GlobalTransaction) {
 	if err := tc.opts.storage.Put(tc.id, g); err != nil {
 		log.Fatalf("%s: failed with %+v",
 			meta.TagGlobalTransaction(g.ID, "save"),
@@ -360,7 +360,7 @@ func (tc *cellTransactionCoordinator) mustSave(g *meta.GlobalTransaction) {
 	}
 }
 
-func (tc *cellTransactionCoordinator) removeGlobalTransaction(g *meta.GlobalTransaction) {
+func (tc *defaultTC) removeGlobalTransaction(g *meta.GlobalTransaction) {
 	if err := tc.opts.storage.Remove(tc.id, g); err != nil {
 		log.Fatalf("%s: failed with %+v",
 			meta.TagGlobalTransaction(g.ID, "remove"),
@@ -375,7 +375,7 @@ func (tc *cellTransactionCoordinator) removeGlobalTransaction(g *meta.GlobalTran
 	tc.publishEvent(event{eventType: completeG, data: g})
 }
 
-func (tc *cellTransactionCoordinator) checkGlobalCompleted(g *meta.GlobalTransaction) bool {
+func (tc *defaultTC) checkGlobalCompleted(g *meta.GlobalTransaction) bool {
 	completed := true
 	for _, b := range g.Branches {
 		if !b.Complete() {

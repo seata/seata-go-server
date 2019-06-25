@@ -8,7 +8,7 @@ import (
 	"seata.io/server/pkg/meta"
 )
 
-func (tc *cellTransactionCoordinator) becomeLeader() {
+func (tc *defaultTC) becomeLeader() {
 	c := acquireCMD()
 	c.cmdType = cmdBecomeLeader
 
@@ -20,7 +20,7 @@ func (tc *cellTransactionCoordinator) becomeLeader() {
 	}
 }
 
-func (tc *cellTransactionCoordinator) becomeFollower() {
+func (tc *defaultTC) becomeFollower() {
 	c := acquireCMD()
 	c.cmdType = cmdBecomeFollower
 
@@ -32,7 +32,7 @@ func (tc *cellTransactionCoordinator) becomeFollower() {
 	}
 }
 
-func (tc *cellTransactionCoordinator) reset() {
+func (tc *defaultTC) reset() {
 	tc.gids = make(map[uint64]*meta.GlobalTransaction)
 	tc.timeouts = make(map[uint64]goetty.Timeout)
 	tc.notifyTimeouts = make(map[string]goetty.Timeout)
@@ -43,7 +43,7 @@ func (tc *cellTransactionCoordinator) reset() {
 		tc.id)
 }
 
-func (tc *cellTransactionCoordinator) cancelTimeouts() {
+func (tc *defaultTC) cancelTimeouts() {
 	for _, timeout := range tc.timeouts {
 		timeout.Stop()
 	}
@@ -56,7 +56,7 @@ func (tc *cellTransactionCoordinator) cancelTimeouts() {
 		tc.id)
 }
 
-func (tc *cellTransactionCoordinator) loadTransactions() error {
+func (tc *defaultTC) loadTransactions() error {
 	q := meta.EmptyQuery
 	q.Limit = batch
 	err := tc.opts.storage.Load(tc.id, q, func(g *meta.GlobalTransaction) error {

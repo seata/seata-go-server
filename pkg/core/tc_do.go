@@ -7,7 +7,7 @@ import (
 	"seata.io/server/pkg/meta"
 )
 
-func (tc *cellTransactionCoordinator) doRegistryGlobalTransaction(g *meta.GlobalTransaction) error {
+func (tc *defaultTC) doRegistryGlobalTransaction(g *meta.GlobalTransaction) error {
 	tc.doAddG(g)
 
 	if g.Action != meta.NoneAction {
@@ -27,7 +27,7 @@ func (tc *cellTransactionCoordinator) doRegistryGlobalTransaction(g *meta.Global
 	return nil
 }
 
-func (tc *cellTransactionCoordinator) doComplete(gid uint64) {
+func (tc *defaultTC) doComplete(gid uint64) {
 	g, ok := tc.doGetG(gid)
 	if !ok {
 		log.Fatalf("%s: not found",
@@ -47,7 +47,7 @@ func (tc *cellTransactionCoordinator) doComplete(gid uint64) {
 	}
 }
 
-func (tc *cellTransactionCoordinator) doGTimeout(gid uint64) {
+func (tc *defaultTC) doGTimeout(gid uint64) {
 	g, ok := tc.doGetG(gid)
 	if !ok {
 		log.Warnf("%s: not found, ignore",
@@ -107,7 +107,7 @@ func (tc *cellTransactionCoordinator) doGTimeout(gid uint64) {
 	tc.doComplete(gid)
 }
 
-func (tc *cellTransactionCoordinator) doCommit(g *meta.GlobalTransaction) {
+func (tc *defaultTC) doCommit(g *meta.GlobalTransaction) {
 	if len(g.Branches) == 0 {
 		log.Fatalf("%s: has no branch registry",
 			meta.TagGlobalTransaction(g.ID, "do_commit"))
@@ -137,7 +137,7 @@ func (tc *cellTransactionCoordinator) doCommit(g *meta.GlobalTransaction) {
 	}
 }
 
-func (tc *cellTransactionCoordinator) doRollback(g *meta.GlobalTransaction) {
+func (tc *defaultTC) doRollback(g *meta.GlobalTransaction) {
 	if len(g.Branches) == 0 {
 		g.Status = meta.GlobalStatusRollbacked
 		log.Warnf("%s: no branches",
@@ -166,23 +166,23 @@ func (tc *cellTransactionCoordinator) doRollback(g *meta.GlobalTransaction) {
 	}
 }
 
-func (tc *cellTransactionCoordinator) doSendNotify(nt meta.Notify) {
+func (tc *defaultTC) doSendNotify(nt meta.Notify) {
 	tc.trans.AsyncSend(nt.Resource, nt, tc.calcBNotifyTimeout)
 }
 
-func (tc *cellTransactionCoordinator) doGetGCount() int {
+func (tc *defaultTC) doGetGCount() int {
 	return len(tc.gids)
 }
 
-func (tc *cellTransactionCoordinator) doGetG(id uint64) (*meta.GlobalTransaction, bool) {
+func (tc *defaultTC) doGetG(id uint64) (*meta.GlobalTransaction, bool) {
 	g, ok := tc.gids[id]
 	return g, ok
 }
 
-func (tc *cellTransactionCoordinator) doAddG(g *meta.GlobalTransaction) {
+func (tc *defaultTC) doAddG(g *meta.GlobalTransaction) {
 	tc.gids[g.ID] = g
 }
 
-func (tc *cellTransactionCoordinator) doRemoveG(gid uint64) {
+func (tc *defaultTC) doRemoveG(gid uint64) {
 	delete(tc.gids, gid)
 }

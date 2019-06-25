@@ -27,12 +27,12 @@ type eventListener interface {
 	OnEvent(e event)
 }
 
-func (tc *cellTransactionCoordinator) initEvent() {
+func (tc *defaultTC) initEvent() {
 	tc.eventListeners = make([]eventListener, 0)
 	tc.eventListeners = append(tc.eventListeners, tc.metricsListener)
 }
 
-func (tc *cellTransactionCoordinator) publishEvent(e event) {
+func (tc *defaultTC) publishEvent(e event) {
 	for _, lister := range tc.eventListeners {
 		lister.OnEvent(e)
 	}
