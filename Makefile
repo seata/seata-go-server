@@ -75,8 +75,16 @@ dist_dir: ; $(info ======== prepare distribute dir:)
 clean: ; $(info ======== clean all:)
 	rm -rf $(DIST_DIR)*
 
+.PHONY: redis
+redis: ; $(info ======== run redis:)
+	docker run -d -p 6379:6379 redis
+
+.PHONY: etcd
+etcd: ; $(info ======== run etcd:)
+	docker run -d -p 2379:2379 xieyanze/etcd3
+
 .PHONY: test
-test: ; $(info ======== run test:)
+test: redis etcd; $(info ======== run test:)
 	env GO111MODULE=on go test -mod=vendor ./...
 
 .PHONY: help

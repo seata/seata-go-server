@@ -49,12 +49,6 @@ func TestAddExpectLeader(t *testing.T) {
 			return
 		}
 
-		time.Sleep(time.Second * 3)
-		err = s.checkExpectLeader(1, 101)
-		if err != nil {
-			t.Errorf("checkExpectLeader failed with %+v", err)
-			return
-		}
 		break
 	case <-time.After(time.Second * 10):
 		t.Errorf("campaignLeader timeout")
