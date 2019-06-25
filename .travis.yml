@@ -1,0 +1,27 @@
+dist: trusty
+sudo: required
+
+language: go
+go:
+  - 1.12
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: test
+      script: make test
+    - stage: build
+      script: make
+
+stages:
+  - name: test
+  - name: build
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+notifications:
+  email:
+    - zhangxu19830126@gmail.com

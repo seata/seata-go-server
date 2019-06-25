@@ -75,6 +75,10 @@ dist_dir: ; $(info ======== prepare distribute dir:)
 clean: ; $(info ======== clean all:)
 	rm -rf $(DIST_DIR)*
 
+.PHONY: test
+test: ; $(info ======== run test:)
+	env GO111MODULE=on go test -mod=vendor ./...
+
 .PHONY: help
 help:
 	@echo "build release binary: \n\t\tmake release\n"
