@@ -33,7 +33,7 @@ seata_darwin: darwin seata-go-server;
 dashboard_darwin: darwin seata-go-dashboard;
 
 .PHONY: release
-release: dist_dir seata-go-proxy seata-go-seata seata-go-dashboard;
+release: dist_dir seata-go-proxy seata-go-server seata-go-dashboard;
 
 .PHONY: docker
 docker: dist_dir ui;
