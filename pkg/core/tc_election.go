@@ -21,14 +21,27 @@ func (tc *defaultTC) becomeLeader() {
 }
 
 func (tc *defaultTC) becomeFollower() {
+	completeC := make(chan struct{})
+
 	c := acquireCMD()
 	c.cmdType = cmdBecomeFollower
+	c.completeCB = func() {
+		completeC <- struct{}{}
+	}
 
 	err := tc.cmds.Put(c)
 	if err != nil {
 		log.Fatalf("[frag-%d]: add become follower event failed with %+v",
 			tc.id,
 			err)
+	}
+
+	select {
+	case <-completeC:
+		return
+	case <-time.After(time.Minute):
+		log.Fatalf("[frag-%d]: become follower event handle timeout",
+			tc.id)
 	}
 }
 

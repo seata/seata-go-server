@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/coreos/etcd/embed"
 	"github.com/coreos/etcd/etcdserver"
 	"github.com/coreos/etcd/pkg/types"
+	"github.com/coreos/pkg/capnslog"
 )
 
 // unixToHTTP replace unix scheme with http.
@@ -25,12 +27,17 @@ var (
 
 // EmbeddedEtcdCfg cfg for embedded etcd
 type EmbeddedEtcdCfg struct {
-	Name                string
-	DataPath            string
+	Name         string
+	DataPath     string
+	Join         string
+	EmbedEtcdLog string
+
 	URLsClient          string
 	URLsAdvertiseClient string
-	URLsPeer            string
-	URLsAdvertisePeer   string
+
+	URLsPeer          string
+	URLsAdvertisePeer string
+
 	InitialCluster      string
 	InitialClusterState string
 }
@@ -66,35 +73,64 @@ func (c *EmbeddedEtcdCfg) getEmbedEtcdConfig() (*embed.Config, error) {
 		return nil, err
 	}
 
+	if cfg.ClusterState == "" {
+		cfg.ClusterState = embed.ClusterStateFlagNew
+	}
+
+	if cfg.InitialCluster == "" {
+		addrs := []string{}
+
+		for _, u := range cfg.APUrls {
+			addrs = append(addrs, fmt.Sprintf("%s=%s", c.Name, u.String()))
+		}
+
+		cfg.InitialCluster = strings.Join(addrs, ",")
+	}
+
 	return cfg, nil
 }
 
-func initWithEmbedEtcd(clientAddrs []string, ecfg *EmbeddedEtcdCfg) *clientv3.Client {
+func initWithEmbedEtcd(ecfg *EmbeddedEtcdCfg) *clientv3.Client {
+	if ecfg.EmbedEtcdLog != "" {
+		f, err := os.OpenFile(ecfg.EmbedEtcdLog, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+		if err != nil {
+			log.Fatal("redirect embed log to %s failed with %+v", ecfg.EmbedEtcdLog, err)
+		}
+		capnslog.SetFormatter(capnslog.NewPrettyFormatter(f, false))
+		capnslog.SetGlobalLogLevel(capnslog.DEBUG)
+	}
+
+	err := prepareJoin(ecfg)
+	if err != nil {
+		log.Fatalf("prophet: prepare join embed etcd failed with %+v",
+			err)
+	}
+
 	log.Info("prophet: start embed etcd")
 	cfg, err := ecfg.getEmbedEtcdConfig()
 	if err != nil {
-		log.Fatalf("prophet: start embed etcd failure, errors:\n %+v",
+		log.Fatalf("prophet: start embed etcd failed with %+v",
 			err)
 	}
 
 	etcd, err := embed.StartEtcd(cfg)
 	if err != nil {
-		log.Fatalf("prophet: start embed etcd failure, errors:\n %+v",
+		log.Fatalf("prophet: start embed etcd failed with %+v",
 			err)
 	}
 
 	select {
 	case <-etcd.Server.ReadyNotify():
 		log.Info("prophet: embed etcd is ready")
-		return doAfterEmbedEtcdServerReady(clientAddrs, etcd, cfg, ecfg)
-	case <-time.After(time.Minute):
+		return doAfterEmbedEtcdServerReady(etcd, cfg, ecfg)
+	case <-time.After(time.Minute * 5):
 		log.Fatalf("prophet: start embed etcd timeout")
 	}
 
 	return nil
 }
 
-func doAfterEmbedEtcdServerReady(clientAddrs []string, etcd *embed.Etcd, cfg *embed.Config, ecfg *EmbeddedEtcdCfg) *clientv3.Client {
+func doAfterEmbedEtcdServerReady(etcd *embed.Etcd, cfg *embed.Config, ecfg *EmbeddedEtcdCfg) *clientv3.Client {
 	checkEtcdCluster(etcd, ecfg)
 
 	id := uint64(etcd.Server.ID())
@@ -102,7 +138,7 @@ func doAfterEmbedEtcdServerReady(clientAddrs []string, etcd *embed.Etcd, cfg *em
 		id,
 		etcd.Server.Leader())
 
-	client, err := initEtcdClient(clientAddrs)
+	client, err := initEtcdClient(ecfg)
 	if err != nil {
 		log.Fatalf("prophet: init embed etcd client failure, errors:\n %+v",
 			err)
@@ -121,7 +157,12 @@ func doAfterEmbedEtcdServerReady(clientAddrs []string, etcd *embed.Etcd, cfg *em
 	return client
 }
 
-func initEtcdClient(clientAddrs []string) (*clientv3.Client, error) {
+func initEtcdClient(ecfg *EmbeddedEtcdCfg) (*clientv3.Client, error) {
+	clientAddrs := strings.Split(getStringValue(ecfg.URLsAdvertisePeer, ecfg.URLsPeer), ",")
+	if ecfg.Join != "" {
+		clientAddrs = strings.Split(ecfg.Join, ",")
+	}
+
 	log.Infof("prophet: create etcd v3 client with endpoints <%v>", clientAddrs)
 
 	client, err := clientv3.New(clientv3.Config{

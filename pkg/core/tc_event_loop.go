@@ -72,10 +72,11 @@ type cmd struct {
 	nt            meta.Notify
 	leader        uint64
 
-	errorCB  func(error)
-	idCB     func(uint64, error)
-	statusCB func(meta.GlobalStatus, error)
-	boolCB   func(bool, error)
+	completeCB func()
+	errorCB    func(error)
+	idCB       func(uint64, error)
+	statusCB   func(meta.GlobalStatus, error)
+	boolCB     func(bool, error)
 }
 
 func (c *cmd) reset() {
@@ -94,10 +95,17 @@ func (c *cmd) reset() {
 	c.resource = ""
 	c.leader = 0
 
+	c.completeCB = nil
 	c.errorCB = nil
 	c.idCB = nil
 	c.statusCB = nil
 	c.boolCB = nil
+}
+
+func (c *cmd) complete() {
+	if c.completeCB != nil {
+		c.completeCB()
+	}
 }
 
 func (c *cmd) respError(err error) {
@@ -145,7 +153,7 @@ func (tc *defaultTC) HandleEvent() bool {
 		tc.handleBecomeLeader()
 		break
 	case cmdBecomeFollower:
-		tc.handleBecomeFollower()
+		tc.handleBecomeFollower(c)
 		break
 	case cmdRegistryG:
 		tc.handleRegistryGlobalTransaction(c)
@@ -210,7 +218,7 @@ func (tc *defaultTC) handleTransferLeader(c *cmd) {
 	}
 
 	tc.leaderPeerID = c.leader
-	tc.handleBecomeFollower()
+	tc.handleBecomeFollower(c)
 }
 
 func (tc *defaultTC) handleBecomeLeader() {
@@ -237,8 +245,9 @@ func (tc *defaultTC) handleBecomeLeader() {
 	}
 }
 
-func (tc *defaultTC) handleBecomeFollower() {
+func (tc *defaultTC) handleBecomeFollower(c *cmd) {
 	if !tc.leader {
+		c.complete()
 		return
 	}
 
@@ -251,6 +260,8 @@ func (tc *defaultTC) handleBecomeFollower() {
 	if tc.opts.becomeFollower != nil {
 		tc.opts.becomeFollower()
 	}
+
+	c.complete()
 }
 
 func (tc *defaultTC) handleRegistryGlobalTransaction(c *cmd) {

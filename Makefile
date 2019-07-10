@@ -38,11 +38,11 @@ release: dist_dir seata-go-proxy seata-go-server seata-go-dashboard;
 .PHONY: docker
 docker: dist_dir ui;
 	@echo ========== current docker tag is: $(RELEASE_VERSION) ==========
-	sed 's/#TARGET#/seata/g' Dockerfile > Dockerfile.bak
+	sed 's/#TARGET#/seata-go-server/g' Dockerfile > Dockerfile.bak
 	docker build --build-arg RELEASE=$(RELEASE_VERSION) --build-arg TARGET=seata-go-server -t seata.io/seata-go-server:$(RELEASE_VERSION) -f Dockerfile.bak .
-	sed 's/#TARGET#/proxy/g' Dockerfile > Dockerfile.bak
+	sed 's/#TARGET#/seata-go-proxy/g' Dockerfile > Dockerfile.bak
 	docker build --build-arg RELEASE=$(RELEASE_VERSION) --build-arg TARGET=seata-go-proxy -t seata.io/seata-go-proxy:$(RELEASE_VERSION) -f Dockerfile.bak .
-	sed 's/#TARGET#/dashboard/g' Dockerfile > Dockerfile.bak
+	sed 's/#TARGET#/seata-go-dashboard/g' Dockerfile > Dockerfile.bak
 	docker build --build-arg RELEASE=$(RELEASE_VERSION) --build-arg TARGET=seata-go-dashboard -t seata.io/seata-go-dashboard:$(RELEASE_VERSION) -f Dockerfile.bak .
 	rm -rf *.bak
 

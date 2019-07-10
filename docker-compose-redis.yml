@@ -55,12 +55,10 @@ services:
       - --addr-store=redis://redis:6379?maxActive=100&maxIdle=50&idleTimeout=120
       - --addr-peer=seata1:9090
       - --prophet-addr=seata1:9529
-      - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
       - --prophet-urls-client=http://0.0.0.0:2371
       - --prophet-urls-advertise-client=http://seata1:2371
       - --prophet-urls-peer=http://0.0.0.0:2381
       - --prophet-urls-advertise-peer=http://seata1:2381
-      - --prophet-initial-cluster=p1=http://seata1:2381,p2=http://seata2:2381,p3=http://seata3:2381
       - --prophet-storage=true
       - --rack=rack-1
       - --metrics-push-addr=pushgateway:9091
@@ -69,12 +67,13 @@ services:
   seata2:
     image: seata.io/seata-go-server
     depends_on: 
+      - seata1
       - redis
       - pushgateway
     ports:
       - "8081:8080"
     command:
-      - --wait=1
+      - --wait=2
       - --id=2
       - --init=128
       - --fragment-worker=32
@@ -83,12 +82,11 @@ services:
       - --addr-store=redis://redis:6379?maxActive=100&maxIdle=50&idleTimeout=120
       - --addr-peer=seata2:9090
       - --prophet-addr=seata2:9529
-      - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
       - --prophet-urls-client=http://0.0.0.0:2371
       - --prophet-urls-advertise-client=http://seata2:2371
       - --prophet-urls-peer=http://0.0.0.0:2381
       - --prophet-urls-advertise-peer=http://seata2:2381
-      - --prophet-initial-cluster=p1=http://seata1:2381,p2=http://seata2:2381,p3=http://seata3:2381
+      - --prophet-addr-join=http://seata1:2371
       - --prophet-storage=true
       - --rack=rack-2
       - --metrics-push-addr=pushgateway:9091
@@ -97,12 +95,13 @@ services:
   seata3:
     image: seata.io/seata-go-server
     depends_on: 
+      - seata1
       - redis
       - pushgateway
     ports:
       - "8082:8080"
     command:
-      - --wait=1
+      - --wait=15
       - --id=3
       - --init=128
       - --fragment-worker=32
@@ -111,12 +110,11 @@ services:
       - --addr-store=redis://redis:6379?maxActive=100&maxIdle=50&idleTimeout=120
       - --addr-peer=seata3:9090
       - --prophet-addr=seata3:9529
-      - --prophet-addr-client=http://seata1:2371,http://seata2:2371,http://seata3:2371
       - --prophet-urls-client=http://0.0.0.0:2371
       - --prophet-urls-advertise-client=http://seata3:2371
       - --prophet-urls-peer=http://0.0.0.0:2381
       - --prophet-urls-advertise-peer=http://seata3:2381
-      - --prophet-initial-cluster=p1=http://seata1:2381,p2=http://seata2:2381,p3=http://seata3:2381
+      - --prophet-addr-join=http://seata1:2371
       - --prophet-storage=true
       - --rack=rack-3
       - --metrics-push-addr=pushgateway:9091

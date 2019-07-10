@@ -16,8 +16,6 @@ type Cfg struct {
 	DataPath            string
 	Labels              []prophet.Pair
 	ProphetName         string
-	ProphetAddr         string
-	ProphetOptions      []prophet.Option
 	FragHBInterval      time.Duration
 	StoreHBInterval     time.Duration
 	MaxPeerDownDuration time.Duration

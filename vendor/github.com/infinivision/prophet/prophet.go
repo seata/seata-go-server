@@ -69,7 +69,7 @@ type defaultProphet struct {
 }
 
 // NewProphet returns a prophet instance
-func NewProphet(name string, addr string, adapter Adapter, opts ...Option) Prophet {
+func NewProphet(name string, adapter Adapter, opts ...Option) Prophet {
 	value := &options{cfg: &Cfg{}}
 	for _, opt := range opts {
 		opt(value)
@@ -84,13 +84,13 @@ func NewProphet(name string, addr string, adapter Adapter, opts ...Option) Proph
 	p.leaderFlag = 0
 	p.node = &Node{
 		Name: name,
-		Addr: addr,
+		Addr: p.cfg.RPCAddr,
 	}
 	p.signature = p.node.marshal()
-	p.store = newEtcdStore(value.client, p.cfg.Namespace, adapter, p.signature)
+	p.store = newEtcdStore(value.client, adapter, p.signature)
 	p.runner = NewRunner()
 	p.coordinator = newCoordinator(value.cfg, p.runner, p.rt)
-	p.tcpL = goetty.NewServer(addr,
+	p.tcpL = goetty.NewServer(p.cfg.RPCAddr,
 		goetty.WithServerDecoder(goetty.NewIntLengthFieldBasedDecoder(p.bizCodec)),
 		goetty.WithServerEncoder(goetty.NewIntLengthFieldBasedEncoder(p.bizCodec)))
 	p.completeC = make(chan struct{})

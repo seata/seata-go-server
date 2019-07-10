@@ -21,15 +21,16 @@ func (s *store) startProphet() {
 		s.storage = newStorage(ls)
 	}
 
-	adapter := &ProphetAdapter{store: s}
+	if s.pd == nil {
+		adapter := &ProphetAdapter{store: s}
+		s.pdStartedC = make(chan struct{})
+		options := append(prophet.ParseProphetOptions(s.cfg.ProphetName), prophet.WithRoleChangeHandler(s))
+		s.pd = prophet.NewProphet(s.cfg.ProphetName, adapter, options...)
+	}
+
 	s.cfg.CoreOptions = append(s.cfg.CoreOptions,
 		core.WithElectorOptions(election.WithEtcd(s.pd.GetEtcdClient())))
 
-	s.pdStartedC = make(chan struct{})
-	s.cfg.ProphetOptions = append(s.cfg.ProphetOptions, prophet.WithRoleChangeHandler(s))
-	if s.pd == nil {
-		s.pd = prophet.NewProphet(s.cfg.ProphetName, s.cfg.ProphetAddr, adapter, s.cfg.ProphetOptions...)
-	}
 	s.pd.Start()
 	<-s.pdStartedC
 }

@@ -49,7 +49,6 @@ type etcdStore struct {
 	sync.Mutex
 	adapter       Adapter
 	client        *clientv3.Client
-	namespace     string
 	idPath        string
 	leaderPath    string
 	resourcePath  string
@@ -62,17 +61,16 @@ type etcdStore struct {
 	end       uint64
 }
 
-func newEtcdStore(client *clientv3.Client, namespace string, adapter Adapter, signature string) Store {
+func newEtcdStore(client *clientv3.Client, adapter Adapter, signature string) Store {
 	return &etcdStore{
 		adapter:       adapter,
 		client:        client,
-		namespace:     namespace,
 		signature:     signature,
-		idPath:        fmt.Sprintf("%s/meta/id", namespace),
-		leaderPath:    fmt.Sprintf("%s/meta/leader", namespace),
-		resourcePath:  fmt.Sprintf("%s/meta/resources", namespace),
-		containerPath: fmt.Sprintf("%s/meta/containers", namespace),
-		clusterPath:   fmt.Sprintf("%s/cluster", namespace),
+		idPath:        "/meta/id",
+		leaderPath:    "/meta/leader",
+		resourcePath:  "/meta/resources",
+		containerPath: "/meta/containers",
+		clusterPath:   "/cluster",
 	}
 }
 
@@ -382,7 +380,7 @@ func (s *etcdStore) getID() (uint64, error) {
 		return 0, err
 	}
 
-	if resp == nil {
+	if len(resp) == 0 {
 		return 0, nil
 	}
 
@@ -511,49 +509,4 @@ func (s *etcdStore) delete(key string, opts ...clientv3.OpOption) error {
 	}
 
 	return nil
-}
-
-// slowLogTxn wraps etcd transaction and log slow one.
-type slowLogTxn struct {
-	clientv3.Txn
-	cancel context.CancelFunc
-}
-
-func newSlowLogTxn(client *clientv3.Client) clientv3.Txn {
-	ctx, cancel := context.WithTimeout(client.Ctx(), DefaultRequestTimeout)
-	return &slowLogTxn{
-		Txn:    client.Txn(ctx),
-		cancel: cancel,
-	}
-}
-
-func (t *slowLogTxn) If(cs ...clientv3.Cmp) clientv3.Txn {
-	return &slowLogTxn{
-		Txn:    t.Txn.If(cs...),
-		cancel: t.cancel,
-	}
-}
-
-func (t *slowLogTxn) Then(ops ...clientv3.Op) clientv3.Txn {
-	return &slowLogTxn{
-		Txn:    t.Txn.Then(ops...),
-		cancel: t.cancel,
-	}
-}
-
-// Commit implements Txn Commit interface.
-func (t *slowLogTxn) Commit() (*clientv3.TxnResponse, error) {
-	start := time.Now()
-	resp, err := t.Txn.Commit()
-	t.cancel()
-
-	cost := time.Now().Sub(start)
-	if cost > DefaultSlowRequestTime {
-		log.Warnf("prophet: txn runs too slow, resp=<%+v> cost=<%s> errors:\n %+v",
-			resp,
-			cost,
-			err)
-	}
-
-	return resp, err
 }
