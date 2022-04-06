@@ -1,7 +1,7 @@
 [![Build Status](https://api.travis-ci.org/seata/seata-go-server.svg)](https://travis-ci.org/seata/seata-go-server)
 
 # Seata-Go-Server
-Seata-Go-Server is a highly available server-side component of a distributed transaction solution compatible with [Seata](https://github.com/seata/seata) (after version 0.5), developed using Golang, by [InfiniVision](http://infinivision.cn) contributed to the Seata open source community.
+Seata-Go-Server is a highly available server-side component of a distributed transaction solution compatible with [Seata](https://github.com/seata/seata) (after version 0.5), developed using Golang, by InfiniVision contributed to the Seata open source community.
 
 ## Feature
 - High availability, fault-tolerance
