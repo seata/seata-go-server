@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	protocolEtcd = "etcd"
+	protocolEtcd   = "etcd"
+	protocolConsul = "consul"
 )
 
 // NewRegistry returns a registry by url
@@ -20,6 +21,8 @@ func NewRegistry(addr string) (Registry, error) {
 	switch u.Scheme {
 	case protocolEtcd:
 		return newEtcdRegistry(u)
+	case protocolConsul:
+		return newConsulRegistry(u)
 	}
 
 	log.Fatalf("the schema %s is not support", u.Scheme)

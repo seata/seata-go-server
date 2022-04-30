@@ -13,10 +13,10 @@ require (
 	github.com/garyburd/redigo v1.6.0
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/google/btree v1.0.0
+	github.com/hashicorp/consul/api v1.3.0
 	github.com/infinivision/prophet v0.0.0-20190705023647-f1c02b07fcc3
 	github.com/labstack/echo v3.3.5+incompatible
 	github.com/labstack/gommon v0.2.8 // indirect
-	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/prometheus/client_golang v1.0.0
 	github.com/shirou/gopsutil v2.18.12+incompatible
